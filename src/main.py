@@ -11,9 +11,8 @@ proto_path = os.path.join(script_directory, "deploy.prototxt")
 model_path = os.path.join(script_directory, "res10_300x300_ssd_iter_140000.caffemodel")
 net = cv.dnn.readNetFromCaffe(proto_path, model_path)
 
-# --- 2. Configuração do MediaPipe Pose ---
+# --- Configuração do MediaPipe Pose ---
 mp_pose = mp.solutions.pose
-# Você pode ajustar os parâmetros aqui (ex: min_detection_confidence)
 pose = mp_pose.Pose() 
 mp_drawing = mp.solutions.drawing_utils
 # -------------------------------------
@@ -30,14 +29,14 @@ while True:
     # O MediaPipe e o DeepFace precisam de RGB
     rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
     
-    # --- 3. Processamento de Pose (MediaPipe) ---
+    # --- Processamento de Pose (MediaPipe) ---
     # Processa o frame INTEIRO para encontrar poses
     pose_results = pose.process(rgb_frame)
     # ------------------------------------------
     
     (h, w) = frame.shape[:2]
     
-    # --- Seu código existente de Detecção Facial (DNN) ---
+    # --- Detecção Facial (DNN) ---
     blob = cv.dnn.blobFromImage(
         cv.resize(frame, (300, 300)), 
         1.0,
@@ -68,7 +67,6 @@ while True:
             region_of_interest = rgb_frame[y1:y2, x1:x2]
 
             try:
-                # O enforce_detection=False é crucial aqui
                 result = DeepFace.analyze(region_of_interest, actions=['emotion'], enforce_detection=False)
                 if isinstance(result, list):
                     dominant_emotion = result[0].get('dominant_emotion', 'N/A')
@@ -82,7 +80,7 @@ while True:
             label_y = y1 - 10 if (y1 - 10) > 0 else (y2 + 20)
             cv.putText(frame, dominant_emotion, (x1, label_y), cv.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
     
-    # --- 4. Desenhar os resultados da POSE (MediaPipe) ---
+    # --- 4Desenhar os resultados da POSE (MediaPipe) ---
     # Desenha o esqueleto da pose sobre o frame original (BGR)
     if pose_results.pose_landmarks:
         mp_drawing.draw_landmarks(
@@ -101,5 +99,5 @@ while True:
         break
 
 video_capture.release()
-pose.close() # <-- 5. Liberar o recurso de pose
+pose.close()
 cv.destroyAllWindows()
