@@ -1,11 +1,35 @@
+# # --- Pacotes Principais ---
+# deepface
+# mediapipe
+
+# # --- Pinos de Versão Críticos ---
+# # O mediapipe exige numpy<2 e protobuf<5.
+
+# # Força o tensorflow para a última versão compatível com protobuf < 5
+# tensorflow<=2.16.1
+
+# # Adiciona o pacote tf-keras correspondente
+# # Isso é obrigatório para tensorflow >= 2.16
+# tf-keras~=2.16.0
+
+# # Força o opencv para a última versão compatível com numpy < 2
+# opencv-python<=4.9.0.80
+
+# # Garante a versão mais recente do numpy 1.x
+# numpy<=1.26.4
+
+# # Garante uma versão 4.x do protobuf
+# protobuf<5
 # --- Pacotes Principais ---
 deepface
 mediapipe
+ultralytics  # Para YOLOv8 (Detecta/Instala PyTorch com suporte a GPU)
 
 # --- Pinos de Versão Críticos ---
 # O mediapipe exige numpy<2 e protobuf<5.
 
 # Força o tensorflow para a última versão compatível com protobuf < 5
+# Esta versão (sem '-cpu') usará a GPU automaticamente.
 tensorflow<=2.16.1
 
 # Adiciona o pacote tf-keras correspondente
