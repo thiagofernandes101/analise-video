@@ -7,6 +7,9 @@ from ultralytics import YOLO
 import traceback
 
 import torch
+import threading
+import queue
+import time
 
 # --- 1. Configuração Inicial ---
 
@@ -68,6 +71,64 @@ EMOTION_CONFIDENCE_THRESHOLD = 40.0 # % de confiança para aceitar uma emoção
 # Formato: { track_id: (emotion, last_analysis_frame) }
 emotion_cache = {}
 
+# --- 3.1 Configuração de Threading para DeepFace ---
+# Fila para enviar imagens para análise (maxsize evita que a fila cresça infinitamente se o processamento for lento)
+emotion_queue = queue.Queue(maxsize=5)
+
+def emotion_worker():
+    """Função que roda em thread separada para processar emoções sem travar o vídeo."""
+    print("Iniciando worker de emoção...")
+    while True:
+        try:
+            # Pega um item da fila (bloqueia se vazia, mas aqui usamos timeout para permitir encerramento limpo se necessário)
+            task = emotion_queue.get(timeout=1)
+            track_id, face_img, current_frame = task
+            
+            try:
+                # Usamos o 'retinaface' pois é um bom backend de GPU
+                # Nota: DeepFace pode usar CPU ou GPU dependendo da instalação do TF.
+                # Como instalamos tf-cpu, vai usar CPU, mas em thread separada não trava a UI.
+                result = DeepFace.analyze(
+                    face_img, 
+                    actions=['emotion'], 
+                    enforce_detection=False,
+                    detector_backend='retinaface' 
+                )
+                
+                dominant_emotion = 'neutral'
+                if isinstance(result, list) and len(result) > 0:
+                    # Filtro de confiança
+                    confidence = result[0]['emotion'][result[0]['dominant_emotion']]
+                    if confidence >= EMOTION_CONFIDENCE_THRESHOLD:
+                        dominant_emotion = result[0]['dominant_emotion']
+                
+                # Atualiza o cache global (Thread-safe em Python para dicts simples)
+                emotion_cache[track_id] = (dominant_emotion, current_frame)
+                
+            except Exception as e:
+                # Se falhar, mantém o anterior ou define N/A
+                # print(f"Erro na análise de emoção ID {track_id}: {e}")
+                if track_id not in emotion_cache:
+                     emotion_cache[track_id] = ('N/A', current_frame)
+                else:
+                     # Atualiza apenas o frame count para não tentar de novo imediatamente
+                     old_emotion = emotion_cache[track_id][0]
+                     emotion_cache[track_id] = (old_emotion, current_frame)
+
+            finally:
+                emotion_queue.task_done()
+                
+        except queue.Empty:
+            continue
+        except Exception as e:
+            print(f"Erro fatal no worker: {e}")
+            break
+
+# Inicia a thread
+worker_thread = threading.Thread(target=emotion_worker, daemon=True)
+worker_thread.start()
+
+
 while True:
     ret, frame = video_capture.read()
     
@@ -107,58 +168,33 @@ while True:
             (x1, y1, x2, y2) = box.astype("int")
             (x1, y1) = (max(0, x1), max(0, y1))
             (x2, y2) = (min(w - 1, x2), min(h - 1, y2))
-                
-            dominant_emotion = "..." # Placeholder
             
-            # --- 6. Lógica de Análise de Emoção (Cache por ID) ---
+            # --- 6. Lógica de Análise de Emoção (Assíncrona) ---
             
-            # Este frame é um "frame de análise" PARA ESTA PESSOA?
-            is_analysis_frame = False
+            # Verifica se precisamos analisar este ID
+            should_analyze = False
             if track_id not in emotion_cache:
-                is_analysis_frame = True # Primeira vez vendo essa pessoa
+                should_analyze = True
             else:
                 last_frame_seen = emotion_cache[track_id][1]
                 if frame_count - last_frame_seen >= EMOTION_ANALYSIS_INTERVAL:
-                    is_analysis_frame = True
-    
-            if is_analysis_frame:
-                # --- RODA A ANÁLISE PESADA ---
-                if x2 > x1 and y2 > y1:
-                    region_of_interest = rgb_frame[y1:y2, x1:x2]
-                    try:
-                        # Usamos o 'retinaface' pois é um bom backend de GPU
-                        result = DeepFace.analyze(
-                            region_of_interest, 
-                            actions=['emotion'], 
-                            enforce_detection=False,
-                            detector_backend='retinaface' # Tenta usar um backend mais robusto
-                        )
-                        
-                        if isinstance(result, list) and len(result) > 0:
-                            # Filtro de confiança (Resolve o problema de "sad" em rostos neutros)
-                            confidence = result[0]['emotion'][result[0]['dominant_emotion']]
-                            if confidence >= EMOTION_CONFIDENCE_THRESHOLD:
-                                dominant_emotion = result[0]['dominant_emotion']
-                            else:
-                                dominant_emotion = 'neutral' # Força 'neutral' se a confiança for baixa
-                                
-                            # Atualiza o cache
-                            emotion_cache[track_id] = (dominant_emotion, frame_count)
-                            
-                    except Exception as e:
-                        # Se falhar (ex: rosto não visível no BBox), mantém a emoção antiga
-                        if track_id in emotion_cache:
-                            dominant_emotion = emotion_cache[track_id][0]
-                        else:
-                            dominant_emotion = 'N/A'
-                        emotion_cache[track_id] = (dominant_emotion, frame_count) # Atualiza mesmo na falha
+                    should_analyze = True
             
-            # Se não for um frame de análise, apenas pega o valor do cache
-            if track_id in emotion_cache:
-                dominant_emotion = emotion_cache[track_id][0]
-            else:
-                dominant_emotion = "Loading..." # Vendo pela primeira vez
-    
+            # Se precisa analisar E a fila não está cheia, envia para a thread
+            if should_analyze:
+                if not emotion_queue.full():
+                    if x2 > x1 and y2 > y1:
+                        # Copia a região de interesse para evitar problemas de concorrência com o frame sendo alterado
+                        face_roi = rgb_frame[y1:y2, x1:x2].copy()
+                        emotion_queue.put((track_id, face_roi, frame_count))
+                        
+                        # Atualiza o cache provisoriamente para evitar re-envio imediato
+                        current_emotion = emotion_cache.get(track_id, ("Analyzing...", 0))[0]
+                        emotion_cache[track_id] = (current_emotion, frame_count)
+            
+            # Recupera a emoção atual do cache (pode ser a antiga ou a nova se a thread já terminou)
+            dominant_emotion = emotion_cache.get(track_id, ("...", 0))[0]
+
             # --- 7. Desenhar os Resultados ---
             
             # Desenha BBox da Pessoa (Verde) e o Track ID
