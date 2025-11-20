@@ -4,10 +4,11 @@ import traceback
 import numpy as np
 
 class Visualizer:
-    def draw_pose(self, frame, pose_data):
+    def draw_pose(self, frame, pose_data, activities=None):
         """
         Desenha esqueleto e bounding box da pessoa.
         pose_data: (boxes, track_ids, keypoints)
+        activities: dict {track_id: activity_label}
         """
         if pose_data is None:
             return
@@ -24,8 +25,17 @@ class Visualizer:
                 # Draw Person BBox (Cyan)
                 cv.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 0), 1)
                 
-                # Draw ID
-                cv.putText(frame, f"ID: {track_id}", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
+                # Draw ID and Activity
+                label = f"ID: {track_id}"
+                if activities and track_id in activities:
+                    label += f" | {activities[track_id]}"
+                
+                # Smart Label Positioning
+                label_y = y1 - 10
+                if label_y < 20: # Too close to top
+                    label_y = y1 + 20 # Move inside/below top edge
+                
+                cv.putText(frame, label, (x1, label_y), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
                 
                 # Draw Keypoints
                 for (px, py) in kps:
@@ -41,6 +51,7 @@ class Visualizer:
             return
 
         faces = face_data # list of (x, y, w, h)
+        (h_frame, w_frame) = frame.shape[:2]
         
         # Unpack pose data for matching
         person_boxes = []
@@ -75,7 +86,51 @@ class Visualizer:
 
             # Draw Emotion Label
             label = f"{emotion_text}"
-            cv.putText(frame, label, (fx, fy - 10), cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            
+            # Smart Label Positioning for Face
+            label_y = fy - 10
+            if label_y < 20:
+                label_y = fy + fh + 20 # Move below face if too close to top
+            
+            cv.putText(frame, label, (fx, label_y), cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+    def draw_hud(self, frame, pose_data, activities, id_to_emotion):
+        """
+        Desenha um painel lateral com informações de todos os IDs rastreados.
+        """
+        if pose_data is None:
+            return
+            
+        _, track_ids, _ = pose_data
+        if len(track_ids) == 0:
+            return
+
+        (h, w) = frame.shape[:2]
+        
+        # HUD Configuration
+        panel_w = 300
+        panel_h = len(track_ids) * 30 + 40
+        panel_x = w - panel_w - 10
+        panel_y = 10
+        
+        # Draw semi-transparent background
+        overlay = frame.copy()
+        cv.rectangle(overlay, (panel_x, panel_y), (panel_x + panel_w, panel_y + panel_h), (0, 0, 0), -1)
+        alpha = 0.6
+        cv.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+        
+        # Header
+        cv.putText(frame, "Active Tracks", (panel_x + 10, panel_y + 25), cv.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+        
+        # List items
+        for i, track_id in enumerate(track_ids):
+            y_pos = panel_y + 60 + (i * 30)
+            
+            activity = activities.get(track_id, "Unknown")
+            emotion = id_to_emotion.get(track_id, "N/A")
+            
+            text = f"ID {track_id}: {activity} | {emotion}"
+            cv.putText(frame, text, (panel_x + 10, y_pos), cv.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
     def show_frame(self, frame, frame_count):
         try:

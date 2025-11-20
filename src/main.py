@@ -11,6 +11,7 @@ from detector import PersonDetector
 from face_detector import FaceDetector
 from emotion_analyzer import EmotionAnalyzer
 from visualizer import Visualizer
+from activity_recognizer import ActivityRecognizer
 
 def main():
     # 1. Setup
@@ -25,6 +26,7 @@ def main():
     pose_detector = PersonDetector(Config.YOLO_MODEL_SIZE)
     face_detector = FaceDetector() 
     emotion_analyzer = EmotionAnalyzer()
+    activity_recognizer = ActivityRecognizer()
     visualizer = Visualizer()
     
     # 3. Warmup (Synchronous)
@@ -64,7 +66,10 @@ def main():
             # Trigger analysis for detected faces.
             # We match faces to Person IDs here to associate the emotion request with an ID.
             
-            person_boxes, person_ids, _ = pose_data
+            person_boxes, person_ids, person_keypoints = pose_data
+            
+            # Map ID -> Emotion
+            id_to_emotion = {}
             
             for (fx, fy, fw, fh) in face_data:
                 fx_center = fx + fw / 2
@@ -79,8 +84,11 @@ def main():
                             break
                 
                 if matched_id is not None:
+                    # Get current emotion for this ID
+                    current_emotion, last_update = emotion_analyzer.get_emotion(matched_id)
+                    id_to_emotion[matched_id] = current_emotion
+                    
                     # Check if we should analyze
-                    last_update = emotion_analyzer.get_emotion(matched_id)[1]
                     if (frame_count - last_update) >= Config.EMOTION_ANALYSIS_INTERVAL:
                          h_img, w_img = frame.shape[:2]
                          fx = max(0, fx)
@@ -92,10 +100,21 @@ def main():
                              face_img = frame[fy:fy+fh, fx:fx+fw].copy()
                              emotion_analyzer.analyze_async(matched_id, face_img, frame_count)
 
+            # --- ACTIVITY RECOGNITION ---
+            # Calculate activity for each person
+            activities = {} # ID -> Activity Label
+            if len(person_ids) > 0:
+                for (pid, kps) in zip(person_ids, person_keypoints):
+                    emotion = id_to_emotion.get(pid, None)
+                    activity = activity_recognizer.recognize(kps, emotion)
+                    activities[pid] = activity
+
             # --- VISUALIZATION ---
             # Draw everything on the current frame.
-            visualizer.draw_pose(frame, pose_data)
+            # Pass activities to visualizer
+            visualizer.draw_pose(frame, pose_data, activities)
             visualizer.draw_faces_and_emotions(frame, face_data, pose_data, emotion_analyzer)
+            visualizer.draw_hud(frame, pose_data, activities, id_to_emotion)
             
             # Cleanup Cache
             if len(person_ids) > 0:

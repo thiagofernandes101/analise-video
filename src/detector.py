@@ -2,6 +2,7 @@ import torch
 from ultralytics import YOLO
 import traceback
 import sys
+import numpy as np
 
 class PersonDetector:
     def __init__(self, model_path):
