@@ -41,6 +41,7 @@ RUN pip install --no-cache-dir mtcnn retina-face gdown pandas tqdm Pillow
 # 8. Copia o Projeto
 COPY src ./src
 COPY videos ./videos
+COPY *.pt ./
 
 # 9. Comando Padrão
 CMD ["python", "src/main.py"]

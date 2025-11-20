@@ -1,36 +1,86 @@
 import cv2 as cv
 import os
 import traceback
+import numpy as np
 
 class Visualizer:
-    def draw_results(self, frame, boxes, track_ids, keypoints, emotion_analyzer):
+    def draw_pose(self, frame, pose_data):
+        """
+        Desenha esqueleto e bounding box da pessoa.
+        pose_data: (boxes, track_ids, keypoints)
+        """
+        if pose_data is None:
+            return
+
+        boxes, track_ids, keypoints = pose_data
         (h, w) = frame.shape[:2]
-        
+
         if len(boxes) > 0 and len(track_ids) > 0:
             for (box, track_id, kps) in zip(boxes, track_ids, keypoints):
                 (x1, y1, x2, y2) = box.astype("int")
                 (x1, y1) = (max(0, x1), max(0, y1))
                 (x2, y2) = (min(w - 1, x2), min(h - 1, y2))
                 
-                dominant_emotion = emotion_analyzer.get_emotion(track_id)[0]
-
-                # Draw BBox
-                cv.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                # Draw Person BBox (Cyan)
+                cv.rectangle(frame, (x1, y1), (x2, y2), (255, 255, 0), 1)
                 
-                # Draw Label
-                label = f"ID: {track_id} - {dominant_emotion}"
-                label_y = y1 - 10 if (y1 - 10) > 0 else (y2 + 20)
-                cv.putText(frame, label, (x1, label_y), cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                # Draw ID
+                cv.putText(frame, f"ID: {track_id}", (x1, y1 - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
                 
                 # Draw Keypoints
                 for (px, py) in kps:
                      if px > 0 and py > 0:
                         cv.circle(frame, (int(px), int(py)), 3, (0, 0, 255), -1)
 
+    def draw_faces_and_emotions(self, frame, face_data, pose_data, emotion_analyzer):
+        """
+        Desenha bounding box do rosto e emoção.
+        Tenta associar rosto a um ID de pessoa para pegar a emoção correta.
+        """
+        if face_data is None:
+            return
+
+        faces = face_data # list of (x, y, w, h)
+        
+        # Unpack pose data for matching
+        person_boxes = []
+        person_ids = []
+        if pose_data:
+            person_boxes, person_ids, _ = pose_data
+
+        for (fx, fy, fw, fh) in faces:
+            # Draw Face Box (Green)
+            cv.rectangle(frame, (fx, fy), (fx + fw, fy + fh), (0, 255, 0), 2)
+            
+            # Find owner ID
+            owner_id = None
+            
+            # Simple center matching
+            fx_center = fx + fw / 2
+            fy_center = fy + fh / 2
+            
+            if len(person_boxes) > 0:
+                for (pbox, pid) in zip(person_boxes, person_ids):
+                    px1, py1, px2, py2 = pbox
+                    if px1 < fx_center < px2 and py1 < fy_center < py2:
+                        owner_id = pid
+                        break
+            
+            emotion_text = ""
+            if owner_id is not None:
+                emotion, _ = emotion_analyzer.get_emotion(owner_id)
+                emotion_text = f"{emotion}"
+            else:
+                emotion_text = "?"
+
+            # Draw Emotion Label
+            label = f"{emotion_text}"
+            cv.putText(frame, label, (fx, fy - 10), cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
     def show_frame(self, frame, frame_count):
         try:
             if os.environ.get('DISPLAY'):
-                cv.imshow('YOLOv8-Pose Tracking & Emotion Analysis (GPU)', frame)
+                cv.imshow('Video Analysis', frame)
                 return cv.waitKey(1) == ord('q')
             else:
                 if frame_count % 30 == 0:

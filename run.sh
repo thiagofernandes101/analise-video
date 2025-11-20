@@ -30,6 +30,7 @@ docker run --rm -it \
     --gpus all \
     -e DISPLAY=$DISPLAY \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v ~/.deepface:/root/.deepface \
     $IMAGE_NAME
 
 # Opcional: Verificar se o container viu a GPU
