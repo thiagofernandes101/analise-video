@@ -3,6 +3,7 @@
 FROM python:3.10-slim
 
 WORKDIR /app
+ENV PYTHONPATH="${PYTHONPATH}:/app/src"
 
 # 2. Dependências do Sistema (para OpenCV e X11)
 RUN apt-get update && apt-get install -y \
