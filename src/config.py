@@ -12,7 +12,7 @@ class Config:
     ]
     
     # Model
-    YOLO_MODEL_SIZE = "yolov8n-pose.pt"
+    YOLO_MODEL_SIZE = "yolov8m-pose.pt"
     
     # Analysis
     EMOTION_ANALYSIS_INTERVAL = 15

@@ -106,7 +106,7 @@ def main():
             if len(person_ids) > 0:
                 for (pid, kps) in zip(person_ids, person_keypoints):
                     emotion = id_to_emotion.get(pid, None)
-                    activity = activity_recognizer.recognize(kps, emotion)
+                    activity = activity_recognizer.recognize(kps, pid, emotion)
                     activities[pid] = activity
 
             # --- VISUALIZATION ---
