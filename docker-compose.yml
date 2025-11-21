@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  analise-video:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: analise-video-gpu
+    container_name: analise-video-app
+
+    # GPU Configuration
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+
+    # X11 Display Configuration
+    environment:
+      - DISPLAY=${DISPLAY}
+      - TF_USE_LEGACY_KERAS=1
+      - PYTHONPATH=/app/src
+
+    volumes:
+      # X11 socket for display
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+      # DeepFace cache (avoid re-downloading models)
+      - ~/.deepface:/root/.deepface
+
+      # Mount source code for development (edit without rebuild)
+      - ./src:/app/src
+
+      # Mount videos directory
+      - ./videos:/app/videos
+      # Note: Model files (.pt) are copied during build via Dockerfile
+      # No need to mount them as volumes
+
+      # Network mode for X11
+    network_mode: host
+
+    # Interactive mode
+    stdin_open: true
+    tty: true
+
+    # Auto-remove container after exit
+    # Note: with docker-compose, use 'docker-compose down' instead
+
+    command: python src/main.py

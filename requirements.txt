@@ -1,0 +1,27 @@
+# PyTorch with CUDA 12.1 support
+--index-url https://download.pytorch.org/whl/cu121
+torch
+torchvision
+torchaudio
+
+# YOLO
+ultralytics
+
+# TensorFlow and related
+tensorflow-cpu<=2.16.1
+tf-keras~=2.16.0
+numpy<=1.26.4
+protobuf<5
+opencv-python<=4.9.0.80
+
+# DeepFace and face detection
+deepface
+mediapipe
+mtcnn
+retina-face
+
+# Utilities
+gdown
+pandas
+tqdm
+Pillow
