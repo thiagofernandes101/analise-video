@@ -1,22 +1,27 @@
-# --- Pacotes Principais ---
-deepface
-mediapipe
+# PyTorch with CUDA 12.1 support
+--index-url https://download.pytorch.org/whl/cu121
+torch
+torchvision
+torchaudio
 
-# --- Pinos de Versão Críticos ---
-# O mediapipe exige numpy<2 e protobuf<5.
+# YOLO
+ultralytics
 
-# Força o tensorflow para a última versão compatível com protobuf < 5
-tensorflow<=2.16.1
-
-# Adiciona o pacote tf-keras correspondente
-# Isso é obrigatório para tensorflow >= 2.16
+# TensorFlow and related
+tensorflow-cpu<=2.16.1
 tf-keras~=2.16.0
-
-# Força o opencv para a última versão compatível com numpy < 2
+numpy<=1.26.4
+protobuf<5
 opencv-python<=4.9.0.80
 
-# Garante a versão mais recente do numpy 1.x
-numpy<=1.26.4
+# DeepFace and face detection
+deepface
+mediapipe
+mtcnn
+retina-face
 
-# Garante uma versão 4.x do protobuf
-protobuf<5
+# Utilities
+gdown
+pandas
+tqdm
+Pillow
