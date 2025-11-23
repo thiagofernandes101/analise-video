@@ -4,14 +4,14 @@
 cd "$(dirname "$0")"
 
 # Activate virtual environment
-if [ ! -d "venv" ]; then
+if [ ! -d ".venv" ]; then
     echo "Error: Virtual environment not found!"
-    echo "Please run: python3 -m venv venv"
-    echo "Then: source venv/bin/activate && pip install -r requirements.txt"
+    echo "Please run: python3 -m venv .venv"
+    echo "Then: source .venv/bin/activate && pip install -r requirements.txt"
     exit 1
 fi
 
-source venv/bin/activate
+source .venv/bin/activate
 
 # Set environment variables
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"

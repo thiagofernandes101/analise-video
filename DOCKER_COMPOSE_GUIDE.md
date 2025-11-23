@@ -101,7 +101,7 @@ docker-compose up --build
 docker-compose down --rmi all --volumes
 ```
 
-## Advantages Over run.sh
+## Advantages of Docker Compose
 
 ✅ **No manual script management** - Docker Compose handles everything  
 ✅ **Development-friendly** - Source code is mounted, edit without rebuild  
@@ -210,20 +210,8 @@ sudo chown -R $USER:$USER src/ videos/
    docker-compose up --build
    ```
 
-## Comparing with run.sh
-
-| Feature | run.sh | docker-compose |
-|---------|--------|----------------|
-| Build image | ✅ Manual | ✅ Automatic |
-| Run container | ✅ Manual | ✅ Automatic |
-| GPU support | ✅ | ✅ |
-| X11 display | ✅ | ✅ |
-| Volume mounts | ⚠️ Limited | ✅ Full dev setup |
-| Code hot-reload | ❌ | ✅ |
-| Configuration management | ❌ | ✅ .env file |
-| Service orchestration | ❌ | ✅ |
-| Easier to maintain | ❌ | ✅ |
-
 ## Next Steps
 
-You can now use standard Docker Compose commands instead of the `run.sh` script. The setup is more maintainable and development-friendly!
+You can now use standard Docker Compose commands for all container management. The setup is maintainable and development-friendly!
+
+For local development without Docker, see [LOCAL_SETUP.md](LOCAL_SETUP.md).

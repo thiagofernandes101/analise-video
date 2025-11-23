@@ -43,9 +43,9 @@ python3 --version
 ### 1. Create a Virtual Environment
 
 ```bash
-cd /home/thiagofernandes101/projects/fiap/analise-video
-python3 -m venv venv
-source venv/bin/activate
+cd /path/to/analise-video
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 ### 2. Install Python Dependencies
@@ -75,8 +75,8 @@ xhost +local:
 ### Activate Virtual Environment
 
 ```bash
-cd /home/thiagofernandes101/projects/fiap/analise-video
-source venv/bin/activate
+cd /path/to/analise-video
+source .venv/bin/activate
 ```
 
 ### Run the Main Script
@@ -91,8 +91,8 @@ You can create a `run_local.sh` script for easier execution:
 
 ```bash
 #!/bin/bash
-cd /home/thiagofernandes101/projects/fiap/analise-video
-source venv/bin/activate
+cd /path/to/analise-video
+source .venv/bin/activate
 export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 export TF_USE_LEGACY_KERAS='1'
 xhost +local:
