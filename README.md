@@ -1,6 +1,6 @@
 # Video Analysis System
 
-A real-time video analysis system that performs person detection, pose estimation, face detection, and emotion analysis using deep learning models. Built with Python, leveraging YOLO for pose detection, DeepFace for emotion analysis, and optimized for NVIDIA GPU acceleration.
+A real-time video analysis system that performs person detection, pose estimation, face detection, and emotion analysis using deep learning models. Built with Python, leveraging YOLO for pose detection, DeepFace for emotion analysis, and optimized for NVIDIA GPU acceleration with automatic CPU fallback.
 
 ## 🎯 Features
 
@@ -10,24 +10,30 @@ A real-time video analysis system that performs person detection, pose estimatio
 - **Face Detection**: Robust face detection using DeepFace with multiple backend options
 - **Emotion Analysis**: Real-time facial emotion recognition
 - **Face-Person Matching**: Intelligent matching of detected faces to tracked persons
-- **GPU Acceleration**: Optimized for NVIDIA GPUs (tested on RTX 3060)
+- **GPU Acceleration**: Optimized for NVIDIA GPUs with automatic CPU fallback (tested on RTX 3060)
 - **Real-time Visualization**: HUD overlay with detection results and analytics
+- **Flexible Deployment**: Docker-based setup supports both GPU and CPU-only environments
 
 ## 📋 Prerequisites
 
 ### Required
 
 - **Docker** and **Docker Compose** (recommended) OR Python 3.10+
-- **NVIDIA GPU** with compute capability 6.0+ (e.g., RTX 3060)
-- **NVIDIA Container Toolkit** (for Docker)
-- **NVIDIA GPU Drivers** (version 525+ recommended for CUDA 12.1)
 - **X11 Server** for display (pre-installed on most Linux desktops)
+- **OS**: Linux (Ubuntu 20.04+ recommended, Windows WSL2 supported)
+
+### GPU Support (Optional)
+
+- **NVIDIA GPU** with compute capability 6.0+ (e.g., RTX 3060) for accelerated processing
+- **NVIDIA Container Toolkit** (for Docker GPU support)
+- **NVIDIA GPU Drivers** (version 525+ recommended for CUDA 12.1)
+- **Note**: AMD GPUs are not currently supported. The project is designed for NVIDIA GPU or CPU fallback only.
 
 ### System Requirements
 
-- **GPU VRAM**: 6GB minimum (tested on RTX 3060 6GB VRAM)
-- **RAM**: 8GB minimum
-- **OS**: Linux (Ubuntu 20.04+ recommended)
+- **GPU VRAM**: 6GB minimum for GPU mode (tested on RTX 3060 6GB VRAM)
+- **RAM**: 8GB minimum (16GB recommended for CPU mode)
+- **CPU**: Multi-core processor recommended for CPU mode
 
 ## 🚀 Quick Start
 
@@ -43,8 +49,19 @@ xhost +local:docker
 
 #### 2. Run the Application
 
+**For NVIDIA GPU:**
 ```bash
-docker-compose up --build
+docker compose up --build app-gpu
+```
+
+**For CPU-only (or if GPU unavailable):**
+```bash
+docker compose up --build app-cpu
+```
+
+**Default (GPU if available):**
+```bash
+docker compose up --build
 ```
 
 The application will:
@@ -182,7 +199,7 @@ YOLO_MODEL_NAME = "yolov8m-pose.pt"  # medium (default)
 ANALYSIS_INTERVAL_FRAMES = 30  # Analyze every 30 frames
 
 # Change face detection backend
-FACE_DETECTION_BACKEND = "retinaface"  # or "opencv", "ssd", "mtcnn"
+FACE_DETECTION_BACKEND = "yolov8m"  # Default, or "opencv", "mtcnn", "retinaface"
 ```
 
 ## 🏗️ Architecture
@@ -235,14 +252,21 @@ export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
 ## 📦 Dependencies
 
 Core dependencies:
-- **PyTorch** (with CUDA 12.1 support)
+- **PyTorch** (with CUDA 12.1 support for GPU, CPU fallback available)
 - **Ultralytics** (YOLOv8)
 - **DeepFace** (Face detection and emotion analysis)
+- **LightPHE** (Privacy-preserving features for DeepFace)
 - **OpenCV** (Video processing and visualization)
-- **TensorFlow** (DeepFace backend)
+- **TensorFlow-CPU** (DeepFace backend, optimized for CPU)
 - **MediaPipe, MTCNN, RetinaFace** (Face detection backends)
 
 See [`requirements.txt`](requirements.txt) for full list.
+
+### Recent Dependency Updates
+
+- Added `lightphe` for DeepFace privacy features
+- Updated face detection backend to `yolov8m` for better accuracy
+- Enhanced error logging throughout all detection and analysis modules
 
 ## 📝 License
 
@@ -250,7 +274,7 @@ This is a FIAP academic project.
 
 ## 🤝 Contributing
 
-This is an academic project. For suggestions or issues, please contact the project maintainer.
+This is an academic project.
 
 ## 📚 Further Reading
 

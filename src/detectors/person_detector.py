@@ -15,6 +15,9 @@ class PersonDetector:
             if torch.cuda.is_available():
                 print("CUDA disponível. Forçando modelo para GPU...")
                 model.to('cuda')
+            else:
+                print("CUDA não disponível. Forçando modelo para CPU...")
+                model.to('cpu')
             
             is_cuda = next(model.parameters()).is_cuda
             print(f"Modelo YOLO Pose carregado. Usando GPU: {is_cuda}")
@@ -43,4 +46,5 @@ class PersonDetector:
             self.track(dummy_img)
             print("PersonDetector pronto.")
         except Exception as e:
-            print(f"Erro no warmup do PersonDetector: {e}")
+            print(f"⚠️ Erro no warmup do PersonDetector: {e}")
+            traceback.print_exc()

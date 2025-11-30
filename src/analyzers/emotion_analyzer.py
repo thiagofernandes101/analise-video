@@ -61,6 +61,9 @@ class EmotionAnalyzer:
                     
                 except Exception as e:
                     # Se falhar, mantém o anterior ou define Unknown
+                    print(f"⚠️ ERRO ao analisar emoção para track_id={track_id}: {e}")
+                    import traceback
+                    traceback.print_exc()
                     if track_id not in self.emotion_cache:
                          self.emotion_cache[track_id] = EmotionResult.unknown(frame_number)
                 finally:

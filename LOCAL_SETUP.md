@@ -19,16 +19,18 @@ sudo apt-get install -y \
     x11-xserver-utils
 ```
 
-### 2. NVIDIA GPU Drivers
+### 2. NVIDIA GPU Drivers (Optional)
 
-Make sure you have NVIDIA GPU drivers installed (version 525+ recommended for CUDA 12.1):
+For GPU acceleration, ensure you have NVIDIA GPU drivers installed (version 525+ recommended for CUDA 12.1):
 
 ```bash
 # Check driver version
 nvidia-smi
 ```
 
-If not installed, follow the [NVIDIA Driver Installation Guide](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html).
+If not installed and you want GPU acceleration, follow the [NVIDIA Driver Installation Guide](https://docs.nvidia.com/datacenter/tesla/tesla-installation-notes/index.html).
+
+> **Note**: The project works on CPU-only systems. GPU acceleration is optional but provides significantly faster processing. AMD GPUs are not supported.
 
 ### 3. Python 3.10
 
@@ -50,9 +52,19 @@ source .venv/bin/activate
 
 ### 2. Install Python Dependencies
 
+**For GPU (NVIDIA CUDA):**
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
+```
+
+**For CPU-only:**
+```bash
+pip install --upgrade pip
+# Install PyTorch CPU version first
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+# Then install other dependencies (excluding PyTorch from requirements.txt)
+grep -v "^torch" requirements.txt | grep -v "^--index-url" | pip install -r /dev/stdin
 ```
 
 ### 3. Set Environment Variables
@@ -112,6 +124,12 @@ Then simply run:
 ```
 
 ## Troubleshooting
+
+### GPU vs CPU Mode
+
+The application automatically detects GPU availability. Check the console output:
+- `"CUDA disponível. Forçando modelo para GPU..."` - Using GPU
+- `"CUDA não disponível. Forçando modelo para CPU..."` - Using CPU
 
 ### CUDA Out of Memory
 

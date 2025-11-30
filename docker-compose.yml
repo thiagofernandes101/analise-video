@@ -1,14 +1,34 @@
 version: '3.8'
 
+# 1. Base comum (configurações compartilhadas)
+x-app-base: &app-base
+  build:
+    context: .
+    dockerfile: Dockerfile
+  volumes:
+    - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    - ~/.deepface:/root/.deepface
+    - ./src:/app/src
+    - ./videos:/app/videos
+  environment:
+    - DISPLAY=${DISPLAY}
+    - TF_USE_LEGACY_KERAS=1
+    - PYTHONPATH=/app/src
+  network_mode: host
+  stdin_open: true
+  tty: true
+  command: python src/main.py
+
 services:
-  analise-video:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  # 2. Serviço para Usuários NVIDIA (Default)
+  app-gpu:
+    <<: *app-base
     image: analise-video-gpu
     container_name: analise-video-app
-
-    # GPU Configuration
+    build:
+      context: .
+      args:
+        DEVICE_TYPE: gpu # Avisa o Dockerfile para baixar versão CUDA
     deploy:
       resources:
         reservations:
@@ -17,35 +37,13 @@ services:
               count: all
               capabilities: [ gpu ]
 
-    # X11 Display Configuration
-    environment:
-      - DISPLAY=${DISPLAY}
-      - TF_USE_LEGACY_KERAS=1
-      - PYTHONPATH=/app/src
-
-    volumes:
-      # X11 socket for display
-      - /tmp/.X11-unix:/tmp/.X11-unix:rw
-
-      # DeepFace cache (avoid re-downloading models)
-      - ~/.deepface:/root/.deepface
-
-      # Mount source code for development (edit without rebuild)
-      - ./src:/app/src
-
-      # Mount videos directory
-      - ./videos:/app/videos
-      # Note: Model files (.pt) are copied during build via Dockerfile
-      # No need to mount them as volumes
-
-      # Network mode for X11
-    network_mode: host
-
-    # Interactive mode
-    stdin_open: true
-    tty: true
-
-    # Auto-remove container after exit
-    # Note: with docker-compose, use 'docker-compose down' instead
-
-    command: python src/main.py
+  # 3. Serviço para Usuários CPU / AMD / Intel
+  app-cpu:
+    <<: *app-base
+    image: analise-video-cpu
+    container_name: analise-video-app
+    build:
+      context: .
+      args:
+        DEVICE_TYPE: cpu # Avisa o Dockerfile para baixar versão leve
+    # Nota: Sem seção 'deploy', o container usa a CPU normalmente.

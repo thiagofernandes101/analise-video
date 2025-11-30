@@ -5,8 +5,11 @@ This guide explains how to use Docker Compose to manage your video analysis proj
 ## Prerequisites
 
 1. **Docker and Docker Compose** installed
-2. **NVIDIA Container Toolkit** configured
+2. **NVIDIA Container Toolkit** configured (for GPU support)
 3. **X11 server** for display (usually pre-installed on Linux desktops)
+4. **NVIDIA GPU drivers** (optional, for GPU acceleration)
+
+> **Note**: This project supports NVIDIA GPUs or CPU-only operation. AMD GPUs are not currently supported.
 
 ## Quick Start
 
@@ -31,46 +34,78 @@ Edit `.env` if your DISPLAY is not `:0`.
 
 ### 3. Run the Application
 
-**Build and run:**
+**For NVIDIA GPU (recommended):**
 ```bash
-docker-compose up --build
+docker compose up --build app-gpu
 ```
 
-**Run without rebuilding (if already built):**
+**For CPU-only (if no GPU available):**
 ```bash
-docker-compose up
+docker compose up --build app-cpu
 ```
 
-**Run in detached mode (background):**
+**Default (uses GPU service):**
 ```bash
-docker-compose up -d
+docker compose up --build
 ```
+
+## Service Options
+
+The `docker-compose.yml` defines two services:
+
+### `app-gpu` (Default)
+Optimized for NVIDIA GPU acceleration:
+- Installs PyTorch with CUDA 12.1 support
+- Requires NVIDIA Container Toolkit
+- Automatically uses GPU if available
+- Significantly faster processing
+
+### `app-cpu`
+CPU-only fallback:
+- Installs PyTorch CPU-only version
+- Works on any machine without GPU
+- Slower processing but fully functional
+- Useful for development or testing
 
 ## Common Commands
 
 ### Build the Image
 
+**GPU version:**
 ```bash
-docker-compose build
+docker compose build app-gpu
+```
+
+**CPU version:**
+```bash
+docker compose build app-cpu
 ```
 
 ### Start the Application
 
+**GPU (default):**
 ```bash
-docker-compose up
+docker compose up app-gpu
+```
+
+**CPU:**
+```bash
+docker compose up app-cpu
 ```
 
 ### Stop the Application
 
 Press `Ctrl+C` in the terminal, or if running in detached mode:
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### View Logs
 
 ```bash
-docker-compose logs -f
+docker compose logs -f app-gpu
+# or
+docker compose logs -f app-cpu
 ```
 
 ### Run a One-off Command
@@ -91,8 +126,14 @@ docker-compose restart
 
 If you modify the Dockerfile or add new dependencies:
 
+**GPU:**
 ```bash
-docker-compose up --build
+docker compose up --build app-gpu
+```
+
+**CPU:**
+```bash
+docker compose up --build app-cpu
 ```
 
 ### Remove Everything (Clean Slate)
@@ -107,8 +148,8 @@ docker-compose down --rmi all --volumes
 ✅ **Development-friendly** - Source code is mounted, edit without rebuild  
 ✅ **Environment variables** - Managed via `.env` file  
 ✅ **Consistent configuration** - Single source of truth in `docker-compose.yml`  
-✅ **Easy to extend** - Add databases, Redis, etc. as needed  
-✅ **Better logging** - `docker-compose logs`  
+✅ **Flexible deployment** - Easy switch between GPU and CPU modes  
+✅ **Better logging** - `docker compose logs`  
 ✅ **Service orchestration** - Start/stop/restart services easily  
 
 ## How It Works
@@ -163,14 +204,24 @@ X11 display is configured through:
 
 ### GPU not detected
 
-1. Verify NVIDIA runtime:
+1. Verify you're using the GPU service:
+   ```bash
+   docker compose up app-gpu
+   ```
+
+2. Verify NVIDIA runtime:
    ```bash
    docker info | grep -i runtime
    ```
 
-2. Test GPU access:
+3. Test GPU access:
    ```bash
-   docker-compose run --rm analise-video nvidia-smi
+   docker compose run --rm app-gpu nvidia-smi
+   ```
+
+4. If GPU is unavailable, use CPU service:
+   ```bash
+   docker compose up app-cpu
    ```
 
 ### Permission errors

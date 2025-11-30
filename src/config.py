@@ -41,7 +41,7 @@ class ModelConfig:
     """Configuration for ML models."""
     
     YOLO_MODEL_NAME: str = "yolov8m-pose.pt"
-    FACE_DETECTION_BACKEND: str = 'yolov8'
+    FACE_DETECTION_BACKEND: str = 'yolov8m'
 
 
 @dataclass

@@ -4,7 +4,7 @@ import numpy as np
 import traceback
 
 class FaceDetector:
-    def __init__(self, backend='yolov8'):
+    def __init__(self, backend='yolov8m'):
         self.backend = backend
         print(f"FaceDetector iniciado com backend: {self.backend}")
 
@@ -42,7 +42,8 @@ class FaceDetector:
 
         except Exception as e:
             # Em caso de erro (ex: backend não instalado ou erro interno), logar e retornar vazio
-            # print(f"Erro na detecção facial: {e}")
+            print(f"⚠️ ERRO na detecção facial: {e}")
+            traceback.print_exc()
             return []
 
     def warmup(self):
@@ -53,4 +54,5 @@ class FaceDetector:
             self.detect_faces(dummy_img)
             print("FaceDetector pronto.")
         except Exception as e:
-            print(f"Erro no warmup do FaceDetector: {e}")
+            print(f"⚠️ Erro no warmup do FaceDetector: {e}")
+            traceback.print_exc()

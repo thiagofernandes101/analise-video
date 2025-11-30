@@ -1,5 +1,7 @@
 # 1. Imagem Base Limpa (Python 3.10)
 # Usamos uma imagem limpa para ter controle total sobre a instalação do PyTorch/CUDA.
+# Este Dockerfile suporta NVIDIA GPU (com CUDA 12.1) ou CPU-only.
+# AMD GPUs não são suportadas nesta versão.
 FROM python:3.10-slim
 
 WORKDIR /app
@@ -17,7 +19,16 @@ RUN apt-get update && apt-get install -y \
 # 3. Instalação do PyTorch com CUDA (Explícita)
 # Usamos o index-url oficial para CUDA 12.1 (compatível com drivers recentes).
 # Isso garante que o torch venha com as bibliotecas CUDA embutidas (runtime).
-RUN pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+ARG DEVICE_TYPE=gpu
+
+# Lógica condicional para instalar a versão correta do PyTorch
+RUN if [ "$DEVICE_TYPE" = "cpu" ]; then \
+    echo "Instalando PyTorch para CPU..."; \
+    pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu; \
+    else \
+    echo "Instalando PyTorch para NVIDIA GPU (CUDA 12.1)..."; \
+    pip install --no-cache-dir torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121; \
+    fi
 
 # 4. Instala o YOLO
 # Como o torch já está instalado, ele deve respeitar a versão existente.
@@ -36,7 +47,7 @@ RUN pip install --no-cache-dir \
 RUN pip install --no-cache-dir --no-deps deepface mediapipe
 
 # 7. Dependências extras do DeepFace
-RUN pip install --no-cache-dir mtcnn retina-face gdown pandas tqdm Pillow
+RUN pip install --no-cache-dir mtcnn retina-face gdown pandas tqdm Pillow lightphe
 
 # 8. Copia o Projeto
 COPY src ./src
