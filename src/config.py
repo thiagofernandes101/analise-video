@@ -103,6 +103,33 @@ class VisualizationConfig:
     HUD_ALPHA: float = 0.6  # Transparency
 
 
+@dataclass
+class SummaryConfig:
+    """Configuration for video analysis summary and anomaly detection."""
+    
+    # Anomaly detection thresholds
+    ANOMALY_MOVEMENT_THRESHOLD: float = 200.0  # pixels per frame (increased for less sensitivity)
+    ANOMALY_MIN_STABLE_FRAMES: int = 8  # Minimum frames to maintain activity (increased)
+    ANOMALY_MAX_TRANSITIONS: int = 6  # Max activity changes in window (increased)
+    ANOMALY_TRANSITION_WINDOW: int = 20  # Frame window for transition check (increased)
+    
+    # UI settings - Overview
+    SUMMARY_WINDOW_WIDTH: int = 700
+    SUMMARY_WINDOW_HEIGHT: int = 800
+    SUMMARY_FONT_SCALE: float = 0.6
+    SUMMARY_FONT_SCALE_LARGE: float = 0.8
+    SUMMARY_BAR_MAX_WIDTH: int = 400
+    SUMMARY_BUTTON_WIDTH: int = 200
+    SUMMARY_BUTTON_HEIGHT: int = 40
+    
+    # UI settings - Detailed View
+    DETAIL_WINDOW_WIDTH: int = 800
+    DETAIL_WINDOW_HEIGHT: int = 900
+    DETAIL_SCROLL_STEP: int = 30
+    DETAIL_INDENT: int = 20
+    DETAIL_FONT_SCALE: float = 0.55
+
+
 class Config:
     """
     Main configuration class providing access to all config domains.
@@ -116,6 +143,7 @@ class Config:
     emotion = EmotionAnalysisConfig()
     activity = ActivityRecognitionConfig()
     visualization = VisualizationConfig()
+    summary = SummaryConfig()
     
     # Backward compatibility properties
     @classmethod

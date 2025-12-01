@@ -47,7 +47,7 @@ RUN pip install --no-cache-dir \
 RUN pip install --no-cache-dir --no-deps deepface mediapipe
 
 # 7. Dependências extras do DeepFace
-RUN pip install --no-cache-dir mtcnn retina-face gdown pandas tqdm Pillow lightphe
+RUN pip install --no-cache-dir mtcnn retina-face gdown pandas tqdm Pillow lightphe rich
 
 # 8. Copia o Projeto
 COPY src ./src
