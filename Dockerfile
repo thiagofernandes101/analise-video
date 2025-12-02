@@ -7,13 +7,22 @@ FROM python:3.10-slim
 WORKDIR /app
 ENV PYTHONPATH="${PYTHONPATH}:/app/src"
 
-# 2. Dependências do Sistema (para OpenCV e X11)
+# 3. Instala dependências do sistema (OpenCV, X11, etc.)
+# Added Qt5 libraries for OpenCV highgui support with WSLg
+# Added Tk/Tcl for Tkinter GUI support
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender-dev \
+    libgomp1 \
+    libqt5gui5 \
+    libqt5widgets5 \
+    libqt5test5 \
+    libqt5core5a \
+    tk \
+    tcl \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Instalação do PyTorch com CUDA (Explícita)

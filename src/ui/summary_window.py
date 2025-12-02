@@ -46,25 +46,86 @@ class SummaryWindow:
             statistics: Video statistics to display
         """
         import os
+        import traceback
         
-        # Check if DISPLAY is available
-        if not os.environ.get('DISPLAY'):
-            print("\n=== Video Analysis Summary ===")
-            print(f"Total frames: {statistics.total_frames}")
-            print(f"Persons detected: {statistics.get_person_count()}")
-            print(f"Anomalies: {statistics.get_anomaly_count()}")
-            print("\nTop Activities:")
-            for activity, count in statistics.get_top_activities():
-                print(f"  - {activity}: {count}")
-            print("\nTop Emotions:")
-            for emotion, count in statistics.get_top_emotions():
-                print(f"  - {emotion}: {count}")
-            print("\nNote: GUI summary not available (no DISPLAY). Statistics printed above.")
+        # Check if running in Docker - multiple detection methods
+        in_docker = (
+            os.path.exists('/.dockerenv') or 
+            os.path.exists('/run/.containerenv') or
+            os.environ.get('DOCKER_CONTAINER') == 'true'
+        )
+        
+        display_available = os.environ.get('DISPLAY')
+        
+        print(f"\n[DEBUG] Environment check:")
+        print(f"  - DISPLAY: {display_available}")
+        print(f"  - In Docker: {in_docker}")
+        print(f"  - /.dockerenv exists: {os.path.exists('/.dockerenv')}")
+        
+        # Always use GUI window in Docker (Tkinter works with WSLg)
+        if in_docker and display_available:
+            print("[INFO] Running in Docker with DISPLAY - attempting GUI window")
+            try:
+                from ui.summary_gui_window import SummaryGUIWindow
+                gui = SummaryGUIWindow()
+                gui.show(statistics)
+                return
+            except Exception as e:
+                print(f"\n⚠️  GUI window failed: {e}")
+                print("Falling back to terminal UI...")
+                traceback.print_exc()
+        
+        # Fallback to terminal UI  
+        if in_docker or not display_available:
+            print("[INFO] Using terminal UI")
+            try:
+                self._print_text_summary(statistics)
+            except Exception as e:
+                print(f"\n⚠️  ERROR in terminal UI rendering:")
+                print(f"Error type: {type(e).__name__}")
+                print(f"Error message: {e}")
+                traceback.print_exc()
+                print("\nFalling back to basic text summary...")
+                self._print_basic_summary(statistics)
+            return
+        
+        # If not in Docker and no DISPLAY, use terminal UI
+        if not display_available:
+            print("[INFO] No DISPLAY - using terminal UI")
+            try:
+                self._print_text_summary(statistics)
+            except Exception as e:
+                print(f"\nERROR in terminal UI rendering:")
+                traceback.print_exc()
+                self._print_basic_summary(statistics)
             return
         
         window_name = "Resumo da Análise"
         
         try:
+            # Render first frame
+            if self._current_view == "overview":
+                frame = self._render_overview(statistics)
+            else:
+                frame = self._render_detailed(statistics)
+            
+            # Try to create window
+            cv.imshow(window_name, frame)
+            cv.waitKey(1)  # Give window time to initialize
+            
+            # Verify window was actually created
+            try:
+                window_property = cv.getWindowProperty(window_name, cv.WND_PROP_VISIBLE)
+                if window_property < 0:
+                    raise Exception("Window was not created (getWindowProperty returned negative)")
+            except:
+                raise Exception("OpenCV window creation failed - GUI backend not available")
+            
+            # Now it's safe to set mouse callback
+            cv.setMouseCallback(window_name, self._mouse_callback)
+            self._mouse_callback_registered = True
+            
+            # Main loop
             while True:
                 # Render current view
                 if self._current_view == "overview":
@@ -72,13 +133,8 @@ class SummaryWindow:
                 else:
                     frame = self._render_detailed(statistics)
                 
-                # Display (create window on first frame)
+                # Display
                 cv.imshow(window_name, frame)
-                
-                # Register mouse callback only once after window is created
-                if not self._mouse_callback_registered:
-                    cv.setMouseCallback(window_name, self._mouse_callback)
-                    self._mouse_callback_registered = True
                 
                 # Handle keyboard input
                 key = cv.waitKey(50) & 0xFF
@@ -529,6 +585,10 @@ class SummaryWindow:
             ))
             console.print()
             
+            # Wait for user to press Enter before closing
+            console.print("[bold cyan]Press Enter to close...[/bold cyan]")
+            input()
+            
         except ImportError:
             # Fallback to plain text if Rich is not available
             print("\n" + "="*50)
@@ -547,3 +607,43 @@ class SummaryWindow:
                 print(f"  {emotion}: {count}")
             
             print("\n" + "="*50)
+
+
+    def _print_basic_summary(self, stats: VideoStatistics) -> None:
+        """Print basic text summary when Rich fails."""
+        print("\n" + "="*80)
+        print(" "*25 + "VIDEO ANALYSIS SUMMARY")
+        print("="*80)
+        print(f"\nTotal Frames: {stats.total_frames}")
+        print(f"Persons Detected: {stats.get_person_count()}")
+        print(f"Anomalies Detected: {stats.get_anomaly_count()}")
+        
+        print("\n--- Top Activities ---")
+        for activity, count in stats.get_top_activities():
+            print(f"  {activity}: {count}")
+        
+        print("\n--- Top Emotions ---")
+        for emotion, count in stats.get_top_emotions():
+            print(f"  {emotion}: {count}")
+        
+        if stats.get_person_count() > 0:
+            print("\n--- Per-Person Analysis (First 5) ---")
+            for i, person in enumerate(stats.get_sorted_persons()[:5], 1):
+                print(f"\n  {i}. Person ID #{person.track_id} ({person.frame_count} frames)")
+                print(f"     Emotions: {person.get_emotions_display()}")
+                print(f"     Activities: {person.get_activities_display()}")
+                if person.anomalies:
+                    print(f"     Anomalies: {len(person.anomalies)}")
+                    for anomaly in person.anomalies[:2]:
+                        print(f"       - Frame {anomaly.frame_number}: {anomaly.explanation}")
+        
+        if stats.all_anomalies:
+            print(f"\n--- Anomalies ({len(stats.all_anomalies)} total, showing first 10) ---")
+            for anomaly in stats.all_anomalies[:10]:
+                print(f"  Frame {anomaly.frame_number}, ID #{anomaly.track_id}: {anomaly.explanation}")
+        
+        print("\n" + "="*80)
+        print(" "*20 + "Summary generated successfully")
+        print("="*80 + "\n")
+        print("Press Enter to close...")
+        input()
