@@ -17,6 +17,7 @@ from models.video_statistics import VideoStatistics, PersonStatistics, AnomalyEv
 from models.anomaly_score import AnomalyScorer
 from services.bodypart_tracker import BodyPartTracker
 from services.statistical_detector import StatisticalAnomalyDetector
+from services.movement_categorizer import MovementCategorizer
 from config import Config
 
 
@@ -47,6 +48,9 @@ class StatisticsTracker:
         # Legacy tracking data (still used for simple checks)
         self._last_keypoints: Dict[int, np.ndarray] = {}
         self._activity_history: Dict[int, deque] = {}
+        
+        # Movement categorizer for post-processing
+        self._movement_categorizer = MovementCategorizer(self._config)
         
         # Current frame number
         self._current_frame = 0
@@ -112,6 +116,17 @@ class StatisticsTracker:
                     if emotion_label not in self._statistics.emotion_distribution:
                         self._statistics.emotion_distribution[emotion_label] = 0
                     self._statistics.emotion_distribution[emotion_label] += 1
+            else:
+                emotion_label = "Unknown"
+            
+            # Collect frame history for movement categorization
+            activity_label = activities[track_id].get_display_label() if track_id in activities else None
+            person_stats.add_frame_info(
+                frame=frame_number,
+                emotion=emotion_label,
+                keypoints=person.keypoints,
+                activity=activity_label
+            )
     
     def _detect_anomaly(
         self,
@@ -327,11 +342,17 @@ class StatisticsTracker:
     
     def get_summary(self) -> VideoStatistics:
         """
-        Get complete video statistics.
+        Get complete video statistics with movement categorization.
+        
+        Runs post-processing to categorize movements for each person.
         
         Returns:
             VideoStatistics object with all collected data
         """
+        # Run movement categorization for all persons
+        for person_stats in self._statistics.person_stats.values():
+            self._movement_categorizer.categorize(person_stats)
+        
         return self._statistics
     
     def reset(self) -> None:

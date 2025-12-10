@@ -387,12 +387,24 @@ class SummaryWindow:
             y_pos += 22
             
             # List anomalies
-            for anomaly in person_stats.anomalies:
+            for anomaly in person_stats.anomalies[:3]:  # Limit to first 3
                 bullet = f"  Frame {anomaly.frame_number}: {anomaly.explanation}"
                 cv.putText(virtual_frame, bullet, (x_margin + indent * 2, y_pos),
                            cv.FONT_HERSHEY_SIMPLEX, cfg.DETAIL_FONT_SCALE - 0.05,
                            (150, 0, 0), 1)
                 y_pos += 20
+            
+            # Movement segments timeline
+            if person_stats.movement_segments:
+                cv.putText(virtual_frame, "Timeline:", (x_margin + indent, y_pos),
+                           cv.FONT_HERSHEY_SIMPLEX, cfg.DETAIL_FONT_SCALE, (0, 100, 0), 1)
+                y_pos += 22
+                
+                for seg_line in person_stats.get_segments_display()[:5]:  # Limit to first 5
+                    cv.putText(virtual_frame, f"  {seg_line}", (x_margin + indent * 2, y_pos),
+                               cv.FONT_HERSHEY_SIMPLEX, cfg.DETAIL_FONT_SCALE - 0.05,
+                               (0, 80, 0) if "⚠️" not in seg_line else (200, 100, 0), 1)
+                    y_pos += 20
             
             y_pos += 15
         
@@ -545,6 +557,31 @@ class SummaryWindow:
                 
                 console.print(person_table)
                 console.print()
+                
+                # Movement Timeline for each person
+                for person in stats.get_sorted_persons()[:5]:  # Limit to first 5
+                    if person.movement_segments:
+                        timeline_table = Table(
+                            title=f"📍 Person #{person.track_id} Movement Timeline",
+                            box=box.SIMPLE
+                        )
+                        timeline_table.add_column("Time", style="cyan", width=15)
+                        timeline_table.add_column("Activity", style="green", width=20)
+                        timeline_table.add_column("Emotion", style="yellow", width=15)
+                        timeline_table.add_column("Anomalies", style="red", width=30)
+                        
+                        for seg in person.movement_segments[:10]:
+                            time_str = seg.get_duration_display()
+                            anomaly_str = ", ".join(seg.anomalies) if seg.anomalies else "-"
+                            timeline_table.add_row(
+                                time_str,
+                                seg.activity,
+                                seg.dominant_emotion,
+                                f"[red]{anomaly_str}[/red]" if seg.anomalies else anomaly_str
+                            )
+                        
+                        console.print(timeline_table)
+                        console.print()
             
             # Anomalies Details (if any)
             if stats.all_anomalies:

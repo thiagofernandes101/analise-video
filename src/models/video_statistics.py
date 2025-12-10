@@ -4,8 +4,9 @@ Video statistics data models.
 Contains dataclasses for tracking video analysis results.
 """
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, TYPE_CHECKING
 from collections import Counter
+import numpy as np
 
 
 @dataclass
@@ -39,6 +40,50 @@ class AnomalyEvent:
 
 
 @dataclass
+class FrameInfo:
+    """
+    Stores keypoint and emotion data for a single frame.
+    
+    Part of the per-person history for movement categorization.
+    """
+    frame: int
+    emotion: str
+    keypoints: np.ndarray  # Shape: (17, 2) for COCO format
+    activity: Optional[str] = None  # Activity detected in this frame
+
+
+@dataclass
+class MovementSegment:
+    """
+    Represents a categorized segment of movement.
+    
+    Attributes:
+        start_frame: Starting frame of the segment
+        end_frame: Ending frame of the segment
+        activity: Primary activity during this segment (e.g., "Walking")
+        dominant_emotion: Most frequent emotion during this segment
+        anomalies: List of anomaly descriptions within this segment
+    """
+    start_frame: int
+    end_frame: int
+    activity: str
+    dominant_emotion: str = "Unknown"
+    anomalies: List[str] = field(default_factory=list)
+    
+    def get_duration_display(self, fps: float = 30.0) -> str:
+        """Get human-readable duration display."""
+        start_sec = self.start_frame / fps
+        end_sec = self.end_frame / fps
+        start_str = f"{int(start_sec // 60):02d}:{int(start_sec % 60):02d}"
+        end_str = f"{int(end_sec // 60):02d}:{int(end_sec % 60):02d}"
+        return f"[{start_str} - {end_str}]"
+    
+    def has_anomalies(self) -> bool:
+        """Check if segment contains anomalies."""
+        return len(self.anomalies) > 0
+
+
+@dataclass
 class PersonStatistics:
     """
     Statistics for a single tracked person.
@@ -55,6 +100,9 @@ class PersonStatistics:
     activities: List[str] = field(default_factory=list)
     anomalies: List[AnomalyEvent] = field(default_factory=list)
     frame_count: int = 0
+    # New fields for movement categorization
+    frame_history: List[FrameInfo] = field(default_factory=list)
+    movement_segments: List[MovementSegment] = field(default_factory=list)
     
     def add_emotion(self, emotion: str) -> None:
         """Add emotion if not already recorded."""
@@ -81,6 +129,28 @@ class PersonStatistics:
         if not self.activities:
             return "Nenhuma atividade detectada"
         return ", ".join(self.activities)
+    
+    def add_frame_info(self, frame: int, emotion: str, keypoints: np.ndarray, activity: Optional[str] = None) -> None:
+        """Add frame data to history."""
+        self.frame_history.append(FrameInfo(
+            frame=frame,
+            emotion=emotion,
+            keypoints=keypoints.copy() if keypoints is not None else np.zeros((17, 2)),
+            activity=activity
+        ))
+    
+    def get_segments_display(self, fps: float = 30.0) -> List[str]:
+        """Get formatted list of movement segments for display."""
+        if not self.movement_segments:
+            return ["Nenhum segmento de movimento categorizado"]
+        
+        result = []
+        for seg in self.movement_segments:
+            line = f"{seg.get_duration_display(fps)} {seg.activity} ({seg.dominant_emotion})"
+            if seg.has_anomalies():
+                line += f" ⚠️ {', '.join(seg.anomalies)}"
+            result.append(line)
+        return result
 
 
 @dataclass
