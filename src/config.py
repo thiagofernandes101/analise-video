@@ -104,8 +104,29 @@ class VisualizationConfig:
 
 
 @dataclass
+class MovementDetectionConfig:
+    """Configuration for adaptive movement anomaly detection."""
+    # Intensity normalization ranges (what's considered "normal")
+    MIN_NORMAL_INTENSITY: float = 0.4   # 40% of expected movement
+    MAX_NORMAL_INTENSITY: float = 1.6   # 160% of expected movement
+    
+    # Statistical outlier detection
+    Z_SCORE_THRESHOLD: float = 3.0       # Standard deviations
+    MODIFIED_Z_SCORE_THRESHOLD: float = 3.5  # For MAD-based detection
+    
+    # Anomaly confidence threshold
+    MIN_ANOMALY_CONFIDENCE: float = 0.4  # Only store anomalies >= 40% confidence
+    
+    # Body part visibility threshold
+    KEYPOINT_VISIBILITY_THRESHOLD: float = 0.5  # Confidence score
+    MIN_VISIBLE_KEYPOINTS_RATIO: float = 0.5   # 50% of part's keypoints
+    
+    # Statistical history window
+    MOVEMENT_HISTORY_WINDOW:int = 30  # Frames to use for statistics
+
+@dataclass
 class SummaryConfig:
-    """Configuration for video analysis summary and anomaly detection."""
+    """Configuration for summary window display."""
     
     # Anomaly detection thresholds
     ANOMALY_MOVEMENT_THRESHOLD: float = 200.0  # pixels per frame (increased for less sensitivity)
@@ -137,19 +158,25 @@ class Config:
     This is the main entry point for configuration, maintaining backward
     compatibility while improving organization.
     """
-    
-    video = VideoConfig()
-    model = ModelConfig()
-    emotion = EmotionAnalysisConfig()
-    activity = ActivityRecognitionConfig()
-    visualization = VisualizationConfig()
-    summary = SummaryConfig()
+    def __init__(self):
+        self.video = VideoConfig()
+        self.model = ModelConfig()
+        self.emotion = EmotionAnalysisConfig()
+        self.activity = ActivityRecognitionConfig()
+        self.visualization = VisualizationConfig()
+        self.movement_detection = MovementDetectionConfig()
+        self.summary = SummaryConfig()
     
     # Backward compatibility properties
     @classmethod
     def get_video_path(cls) -> Optional[str]:
         """Find and return video path (backward compatibility)."""
-        return cls.video.find_video_path()
+        # Access the video config from an instance if Config is instantiated,
+        # or create a temporary one if accessed via class (for @classmethod)
+        if hasattr(cls, 'video'): # Check if class attribute exists (old style)
+            return cls.video.find_video_path()
+        else: # New style, requires instantiation
+            return Config().video.find_video_path()
     
     @property
     def YOLO_MODEL_SIZE(self) -> str:

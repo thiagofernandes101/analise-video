@@ -1,32 +1,26 @@
 """
 Video statistics data models.
 
-These models represent comprehensive video analysis statistics including
-per-person tracking, anomalies, and aggregate metrics.
+Contains dataclasses for tracking video analysis results.
 """
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
+from collections import Counter
 
 
 @dataclass
 class AnomalyEvent:
-    """
-    Represents a single anomaly detection event.
-    
-    Attributes:
-        frame_number: Frame where anomaly was detected
-        track_id: Person ID (YOLO tracking ID)
-        anomaly_type: Type of anomaly (abrupt_movement, rapid_transition, atypical_combination)
-        explanation: Human-readable explanation of why this is anomalous
-        activity: Activity label during anomaly
-        posture: Posture label during anomaly
-    """
+    """Represents a detected anomaly in the video."""
     frame_number: int
     track_id: int
     anomaly_type: str
     explanation: str
     activity: str
     posture: str
+    # Enhanced detection fields
+    confidence: float = 0.0  # 0.0-1.0 confidence score
+    severity: str = "low"  # low, medium, high
+    intensity_score: float = 0.0  # Normalized movement intensity
     
     def get_short_description(self) -> str:
         """

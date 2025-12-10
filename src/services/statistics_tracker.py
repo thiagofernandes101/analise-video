@@ -2,7 +2,7 @@
 Statistics tracker service.
 
 Responsible for collecting and aggregating video analysis statistics during
-processing. Implements anomaly detection and maintains per-person tracking.
+processing. Implements adaptive anomaly detection with multi-layer analysis.
 
 Single Responsibility: Statistics collection and anomaly detection.
 """
@@ -14,30 +14,37 @@ from models.person_tracking import PersonTracking
 from models.activity_result import ActivityResult
 from models.emotion_result import EmotionResult
 from models.video_statistics import VideoStatistics, PersonStatistics, AnomalyEvent
+from models.anomaly_score import AnomalyScorer
+from services.bodypart_tracker import BodyPartTracker
+from services.statistical_detector import StatisticalAnomalyDetector
 from config import Config
 
 
 class StatisticsTracker:
     """
-    Tracks comprehensive video analysis statistics.
+    Tracks comprehensive video analysis statistics with adaptive anomaly detection.
     
     Collects data throughout video processing including per-person tracking,
-    anomaly detection, and global activity/emotion distributions.
+    multi-layer anomaly detection, and global activity/emotion distributions.
     
     Follows Single Responsibility Principle: Only handles statistics tracking.
     """
     
-    def __init__(self, config: Config = Config()):
+    def __init__(self, config: Config = None):
         """
-        Initialize statistics tracker.
+        Initialize statistics tracker with adaptive detection systems.
         
         Args:
             config: Configuration object
         """
-        self._config = config
+        self._config = config or Config()
         self._statistics = VideoStatistics()
         
-        # Tracking data for anomaly detection
+        # NEW: Adaptive detection systems
+        self._bodypart_tracker = BodyPartTracker(self._config)
+        self._statistical_detector = StatisticalAnomalyDetector(self._config)
+        
+        # Legacy tracking data (still used for simple checks)
         self._last_keypoints: Dict[int, np.ndarray] = {}
         self._activity_history: Dict[int, deque] = {}
         
@@ -112,54 +119,96 @@ class StatisticsTracker:
         activity: ActivityResult
     ) -> Optional[AnomalyEvent]:
         """
-        Detect anomaly for a person.
+        Detect anomaly using multi-layer adaptive detection.
         
-        Checks for:
-        1. Abrupt movements (large keypoint changes)
-        2. Atypical activity combinations
-        3. Rapid activity transitions
+        Layers:
+        1. Body part visibility & movement analysis
+        2. Statistical outlier detection
+        3. Intensity appropriateness check
+        4. Multi-signal anomaly scoring
         
         Args:
             person: Person tracking data
             activity: Current activity result
             
         Returns:
-            AnomalyEvent if anomaly detected, None otherwise
+            AnomalyEvent if anomaly detected with confidence >= threshold, None otherwise
         """
         track_id = person.track_id
+        activity_label = activity.get_display_label()
         
-        # Check 1: Abrupt movement
-        if track_id in self._last_keypoints:
-            movement = self._calculate_movement(
-                self._last_keypoints[track_id],
-                person.keypoints
-            )
-            
-            threshold = self._config.summary.ANOMALY_MOVEMENT_THRESHOLD
-            if movement > threshold:
-                return AnomalyEvent(
-                    frame_number=self._current_frame,
-                    track_id=track_id,
-                    anomaly_type="abrupt_movement",
-                    explanation=f"Movimento abrupto: {movement:.0f} pixels em 1 frame",
-                    activity=activity.get_display_label(),
-                    posture=activity.posture
-                )
+        # Skip if no previous keypoints
+        if track_id not in self._last_keypoints:
+            self._last_keypoints[track_id] = person.keypoints.copy()
+            return None
         
-        # Store current keypoints for next frame
+        # LAYER 1: Body part movement analysis
+        bodypart_analysis = self._bodypart_tracker.analyze_bodypart_movement(
+            track_id=track_id,
+            current_keypoints=person.keypoints,
+            activity=activity_label
+        )
+        
+        if not bodypart_analysis:
+            # No visible body parts - skip
+            self._last_keypoints[track_id] = person.keypoints.copy()
+            return None
+        
+        # Calculate total movement (for statistical detection)
+        total_movement = self._calculate_movement(
+            self._last_keypoints[track_id],
+            person.keypoints
+        )
+        
+        # Get anomalous body parts
+        anomalous_parts = self._bodypart_tracker.get_anomalous_parts(bodypart_analysis)
+        
+        # Check intensity appropriateness
+        is_appropriate, intensity_explanation, intensity_score = \
+            self._bodypart_tracker.is_movement_appropriate(bodypart_analysis, activity_label)
+        
+        # LAYER 2: Statistical outlier detection
+        is_outlier, z_score, stats = self._statistical_detector.update_and_detect(
+            track_id=track_id,
+            current_movement=total_movement
+        )
+        
+        # LAYER 3: Simple threshold check (for extreme cases)
+        threshold = self._config.summary.ANOMALY_MOVEMENT_THRESHOLD
+        activity_exceeded = total_movement > threshold
+        
+        # LAYER 4: Calculate comprehensive anomaly score
+        anomaly_score = AnomalyScorer.calculate_score(
+            activity_exceeded=activity_exceeded,
+            bodypart_anomalies=anomalous_parts,
+            is_statistical_outlier=is_outlier,
+            z_score=z_score,
+            intensity_appropriate=is_appropriate,
+            intensity_score=intensity_score,
+            activity=activity_label,
+            movement=total_movement
+        )
+        
+        # Store keypoints for next frame
         self._last_keypoints[track_id] = person.keypoints.copy()
         
-        # Check 2: Atypical combinations
-        atypical_anomaly = self._check_atypical_combination(track_id, activity)
-        if atypical_anomaly:
-            return atypical_anomaly
+        # Only return anomaly if confidence >= threshold
+        min_confidence = self._config.movement_detection.MIN_ANOMALY_CONFIDENCE
+        if not anomaly_score.is_anomaly or anomaly_score.confidence < min_confidence:
+            return None
         
-        # Check 3: Rapid transitions
-        transition_anomaly = self._check_rapid_transitions(track_id, activity)
-        if transition_anomaly:
-            return transition_anomaly
-        
-        return None
+        # Create enhanced anomaly event
+        return AnomalyEvent(
+            frame_number=self._current_frame,
+            track_id=track_id,
+            anomaly_type=anomaly_score.anomaly_type.value if anomaly_score.anomaly_type else "unknown",
+            explanation=anomaly_score.explanation,
+            activity=activity_label,
+            posture=activity.posture,
+            confidence=anomaly_score.confidence,
+            severity=anomaly_score.severity,
+            intensity_score=intensity_score
+        )
     
     def _calculate_movement(
         self,
