@@ -127,3 +127,92 @@ class StatisticalAnomalyDetector:
             "max_movement": np.max(history),
             "sample_count": len(history),
         }
+    
+    def detect_trend_anomaly(
+        self,
+        track_id: int,
+        window: int = 10
+    ) -> Tuple[bool, str, float]:
+        """
+        Detect if recent movement trend is anomalous.
+        
+        Analyzes movement patterns to identify:
+        - Sudden acceleration (starting to run, panic)
+        - Sudden deceleration (stopping abruptly, falling)
+        - Erratic movement (unstable tracking or distress)
+        
+        Args:
+            track_id: Person tracking ID
+            window: Number of recent frames to analyze
+            
+        Returns:
+            (is_anomaly, trend_type, trend_strength)
+        """
+        if track_id not in self.movement_history:
+            return False, "unknown", 0.0
+        
+        history = list(self.movement_history[track_id])
+        if len(history) < window:
+            return False, "insufficient_data", 0.0
+        
+        recent = history[-window:]
+        
+        # Calculate velocity differences (acceleration)
+        diffs = np.diff(recent)
+        mean_acceleration = np.mean(diffs)
+        std_acceleration = np.std(diffs)
+        
+        # Calculate jerk (change in acceleration)
+        if len(diffs) >= 2:
+            jerks = np.diff(diffs)
+            mean_jerk = np.mean(np.abs(jerks))
+        else:
+            mean_jerk = 0.0
+        
+        # Classify trend
+        trend_type = "stable"
+        trend_strength = 0.0
+        is_anomaly = False
+        
+        # High consistent acceleration = suddenly speeding up
+        if mean_acceleration > 15:
+            trend_type = "accelerating"
+            trend_strength = mean_acceleration
+            if mean_acceleration > 30:
+                is_anomaly = True
+        
+        # High consistent deceleration = suddenly slowing down
+        elif mean_acceleration < -15:
+            trend_type = "decelerating"
+            trend_strength = abs(mean_acceleration)
+            if mean_acceleration < -30:
+                is_anomaly = True
+        
+        # High variance in acceleration = erratic movement
+        elif std_acceleration > 20:
+            trend_type = "erratic"
+            trend_strength = std_acceleration
+            is_anomaly = True
+        
+        # High jerk = very sudden changes
+        elif mean_jerk > 25:
+            trend_type = "jerky"
+            trend_strength = mean_jerk
+            is_anomaly = True
+        
+        return is_anomaly, trend_type, trend_strength
+    
+    def get_movement_trend(self, track_id: int) -> Tuple[str, float]:
+        """
+        Get simple movement trend classification.
+        
+        Args:
+            track_id: Person tracking ID
+            
+        Returns:
+            (trend_label, trend_strength)
+            trend_label: 'accelerating', 'decelerating', 'stable', 'erratic'
+        """
+        _, trend_type, trend_strength = self.detect_trend_anomaly(track_id)
+        return trend_type, trend_strength
+

@@ -18,6 +18,7 @@ from models.anomaly_score import AnomalyScorer
 from services.bodypart_tracker import BodyPartTracker
 from services.statistical_detector import StatisticalAnomalyDetector
 from services.movement_categorizer import MovementCategorizer
+from services.velocity_tracker import VelocityTracker
 from config import Config
 
 
@@ -41,9 +42,10 @@ class StatisticsTracker:
         self._config = config or Config()
         self._statistics = VideoStatistics()
         
-        # NEW: Adaptive detection systems
+        # Adaptive detection systems
         self._bodypart_tracker = BodyPartTracker(self._config)
         self._statistical_detector = StatisticalAnomalyDetector(self._config)
+        self._velocity_tracker = VelocityTracker(self._config)
         
         # Legacy tracking data (still used for simple checks)
         self._last_keypoints: Dict[int, np.ndarray] = {}
@@ -137,10 +139,14 @@ class StatisticsTracker:
         Detect anomaly using multi-layer adaptive detection.
         
         Layers:
+        0. Tracking error filter (impossible keypoint jumps)
         1. Body part visibility & movement analysis
         2. Statistical outlier detection
         3. Intensity appropriateness check
-        4. Multi-signal anomaly scoring
+        4. Velocity & acceleration analysis
+        5. Temporal trend detection
+        6. Visibility confidence (occlusion handling)
+        7. Multi-signal anomaly scoring
         
         Args:
             person: Person tracking data
@@ -157,6 +163,29 @@ class StatisticsTracker:
             self._last_keypoints[track_id] = person.keypoints.copy()
             return None
         
+        prev_keypoints = self._last_keypoints[track_id]
+        
+        # LAYER 0: Tracking error filter
+        is_valid_track, invalid_kpts = self._bodypart_tracker.filter_tracking_errors(
+            prev_keypoints=prev_keypoints,
+            curr_keypoints=person.keypoints
+        )
+        
+        # If tracking error detected, create immediate anomaly event
+        if not is_valid_track:
+            self._last_keypoints[track_id] = person.keypoints.copy()
+            return AnomalyEvent(
+                frame_number=self._current_frame,
+                track_id=track_id,
+                anomaly_type="tracking_error",
+                explanation=f"Tracking error: {len(invalid_kpts)} keypoints jumped impossibly",
+                activity=activity_label,
+                posture=activity.posture,
+                confidence=0.9,
+                severity="high",
+                intensity_score=0.0
+            )
+        
         # LAYER 1: Body part movement analysis
         bodypart_analysis = self._bodypart_tracker.analyze_bodypart_movement(
             track_id=track_id,
@@ -169,11 +198,20 @@ class StatisticsTracker:
             self._last_keypoints[track_id] = person.keypoints.copy()
             return None
         
+        # Get visible body parts for occlusion handling
+        visible_parts = self._bodypart_tracker.detect_visible_bodyparts(person.keypoints)
+        
+        # LAYER 6: Calculate visibility confidence (occlusion handling)
+        visibility_confidence = self._bodypart_tracker.calculate_visibility_confidence(visible_parts)
+        
+        # If visibility is too low, skip anomaly detection to prevent false positives
+        min_parts = self._config.movement_detection.MIN_VISIBLE_PARTS_FOR_DETECTION
+        if len(visible_parts) < min_parts:
+            self._last_keypoints[track_id] = person.keypoints.copy()
+            return None
+        
         # Calculate total movement (for statistical detection)
-        total_movement = self._calculate_movement(
-            self._last_keypoints[track_id],
-            person.keypoints
-        )
+        total_movement = self._calculate_movement(prev_keypoints, person.keypoints)
         
         # Get anomalous body parts
         anomalous_parts = self._bodypart_tracker.get_anomalous_parts(bodypart_analysis)
@@ -192,7 +230,20 @@ class StatisticsTracker:
         threshold = self._config.summary.ANOMALY_MOVEMENT_THRESHOLD
         activity_exceeded = total_movement > threshold
         
-        # LAYER 4: Calculate comprehensive anomaly score
+        # LAYER 4: Velocity & acceleration analysis
+        derivatives = self._velocity_tracker.update(
+            track_id=track_id,
+            current_movement=total_movement
+        )
+        is_velocity_anomaly = derivatives.is_sudden_movement or derivatives.is_tracking_error
+        velocity_score = derivatives.get_anomaly_score()
+        
+        # LAYER 5: Temporal trend detection
+        is_trend_anomaly, trend_type, trend_strength = self._statistical_detector.detect_trend_anomaly(
+            track_id=track_id
+        )
+        
+        # LAYER 7: Calculate comprehensive anomaly score with all signals
         anomaly_score = AnomalyScorer.calculate_score(
             activity_exceeded=activity_exceeded,
             bodypart_anomalies=anomalous_parts,
@@ -201,7 +252,14 @@ class StatisticsTracker:
             intensity_appropriate=is_appropriate,
             intensity_score=intensity_score,
             activity=activity_label,
-            movement=total_movement
+            movement=total_movement,
+            # New signals
+            is_velocity_anomaly=is_velocity_anomaly,
+            velocity_score=velocity_score,
+            is_trend_anomaly=is_trend_anomaly,
+            trend_type=trend_type,
+            trend_strength=trend_strength,
+            visibility_confidence=visibility_confidence
         )
         
         # Store keypoints for next frame
@@ -360,4 +418,6 @@ class StatisticsTracker:
         self._statistics = VideoStatistics()
         self._last_keypoints.clear()
         self._activity_history.clear()
+        self._velocity_tracker.reset_all()
         self._current_frame = 0
+

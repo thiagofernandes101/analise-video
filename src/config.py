@@ -122,7 +122,23 @@ class MovementDetectionConfig:
     MIN_VISIBLE_KEYPOINTS_RATIO: float = 0.5   # 50% of part's keypoints
     
     # Statistical history window
-    MOVEMENT_HISTORY_WINDOW:int = 30  # Frames to use for statistics
+    MOVEMENT_HISTORY_WINDOW: int = 30  # Frames to use for statistics
+    
+    # Velocity tracking
+    VELOCITY_HISTORY_WINDOW: int = 10  # Frames for velocity analysis
+    MAX_VALID_VELOCITY_PX_PER_FRAME: float = 100.0  # Max plausible movement
+    
+    # Acceleration thresholds
+    ACCELERATION_ANOMALY_THRESHOLD: float = 50.0  # pixels/frame²
+    JERK_ANOMALY_THRESHOLD: float = 30.0  # pixels/frame³
+    
+    # Occlusion handling
+    MIN_VISIBLE_PARTS_FOR_DETECTION: int = 2  # Minimum visible body parts
+    VISIBILITY_CONFIDENCE_BASE: float = 0.3  # Base confidence when partially visible
+    VISIBILITY_CONFIDENCE_SCALE: float = 0.7  # Scale factor for visibility
+    
+    # Tracking error filtering
+    MAX_KEYPOINT_JUMP_RATIO: float = 0.3  # Max jump as ratio of person bbox
 
 @dataclass
 class SummaryConfig:

@@ -270,3 +270,124 @@ class BodyPartTracker:
         visible_parts = ", ".join(parts_summary[:3])  # Top 3
         intensity = self.calculate_normalized_intensity(bodypart_analysis, activity)
         return f"{visible_parts} - {intensity:.1f}x intensity for {activity}"
+    
+    def filter_tracking_errors(
+        self,
+        prev_keypoints: np.ndarray,
+        curr_keypoints: np.ndarray,
+        bbox_size: float = None
+    ) -> Tuple[bool, List[int]]:
+        """
+        Filter out impossible keypoint jumps (likely tracking errors).
+        
+        A keypoint jump is "impossible" if it moves more than:
+        - MAX_VALID_VELOCITY_PX_PER_FRAME (absolute)
+        - MAX_KEYPOINT_JUMP_RATIO * bbox_size (relative)
+        
+        Args:
+            prev_keypoints: Previous frame keypoints (17, 2)
+            curr_keypoints: Current frame keypoints (17, 2)
+            bbox_size: Optional bounding box diagonal size for relative check
+            
+        Returns:
+            (is_valid, invalid_keypoint_indices)
+        """
+        max_velocity = self.config.movement_detection.MAX_VALID_VELOCITY_PX_PER_FRAME
+        max_ratio = self.config.movement_detection.MAX_KEYPOINT_JUMP_RATIO
+        
+        invalid_indices = []
+        
+        for i in range(min(len(prev_keypoints), len(curr_keypoints))):
+            prev_x, prev_y = prev_keypoints[i][0], prev_keypoints[i][1]
+            curr_x, curr_y = curr_keypoints[i][0], curr_keypoints[i][1]
+            
+            # Skip if either keypoint is not visible
+            if prev_x <= 0 or prev_y <= 0 or curr_x <= 0 or curr_y <= 0:
+                continue
+            
+            # Calculate movement
+            distance = np.sqrt((curr_x - prev_x)**2 + (curr_y - prev_y)**2)
+            
+            # Check absolute threshold
+            if distance > max_velocity:
+                invalid_indices.append(i)
+                continue
+            
+            # Check relative threshold if bbox provided
+            if bbox_size and bbox_size > 0:
+                if distance > max_ratio * bbox_size:
+                    invalid_indices.append(i)
+        
+        # Track is invalid if more than 30% of visible keypoints jumped
+        visible_count = sum(
+            1 for i in range(len(curr_keypoints))
+            if curr_keypoints[i][0] > 0 and curr_keypoints[i][1] > 0
+        )
+        
+        is_valid = len(invalid_indices) < (visible_count * 0.3) if visible_count > 0 else True
+        
+        return is_valid, invalid_indices
+    
+    def calculate_visibility_confidence(self, visible_parts: Set[str]) -> float:
+        """
+        Calculate confidence score based on body part visibility.
+        
+        Lower confidence when fewer body parts are visible, as this
+        increases uncertainty in anomaly detection.
+        
+        Confidence formula:
+        - 100% visible (6 parts) = 1.0
+        - 50% visible (3 parts) = ~0.65
+        - 33% visible (2 parts) = ~0.53
+        
+        Args:
+            visible_parts: Set of visible body part names
+            
+        Returns:
+            Confidence score between 0.0 and 1.0
+        """
+        total_parts = 6  # head, shoulders, arms, hands, hips, legs
+        visible_count = len(visible_parts)
+        
+        # Get configuration
+        base = self.config.movement_detection.VISIBILITY_CONFIDENCE_BASE
+        scale = self.config.movement_detection.VISIBILITY_CONFIDENCE_SCALE
+        min_parts = self.config.movement_detection.MIN_VISIBLE_PARTS_FOR_DETECTION
+        
+        # If fewer than minimum parts visible, return very low confidence
+        if visible_count < min_parts:
+            return 0.2
+        
+        # Linear interpolation: base + scale * (visible_ratio)
+        visible_ratio = visible_count / total_parts
+        confidence = base + scale * visible_ratio
+        
+        return min(1.0, confidence)
+    
+    def get_corrected_keypoints(
+        self,
+        prev_keypoints: np.ndarray,
+        curr_keypoints: np.ndarray,
+        invalid_indices: List[int]
+    ) -> np.ndarray:
+        """
+        Get corrected keypoints by replacing invalid ones with previous values.
+        
+        This is useful for smoothing out tracking errors.
+        
+        Args:
+            prev_keypoints: Previous frame keypoints
+            curr_keypoints: Current frame keypoints
+            invalid_indices: Indices of keypoints to replace
+            
+        Returns:
+            Corrected keypoints array
+        """
+        corrected = curr_keypoints.copy()
+        
+        for idx in invalid_indices:
+            if idx < len(prev_keypoints) and idx < len(corrected):
+                corrected[idx] = prev_keypoints[idx]
+        
+        return corrected
+
