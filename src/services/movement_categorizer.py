@@ -101,7 +101,12 @@ class MovementCategorizer:
         if not history:
             return []
         
-        activities = [f.activity or "Unknown" for f in history]
+        activities = []
+        for f in history:
+            if f.is_tracking_error:
+                activities.append("Unknown")
+            else:
+                activities.append(f.activity or "Unknown")
         smoothed = []
         
         for i in range(len(activities)):
@@ -240,41 +245,12 @@ class MovementCategorizer:
                 if f in frame_lookup
             ]
             
-            # Check for conflicting states
-            anomalies.extend(self._check_conflicting_states(segment, segment_frames))
-            
-            # Check for rapid movement in static posture
+            # Check for rapid movement in static posture using pre-calculated velocity
             anomalies.extend(self._check_movement_intensity(segment, segment_frames))
             
             segment.anomalies = anomalies
         
         return segments
-    
-    def _check_conflicting_states(
-        self, 
-        segment: MovementSegment, 
-        frames: List[FrameInfo]
-    ) -> List[str]:
-        """
-        Check for conflicting posture/action combinations.
-        
-        Args:
-            segment: Current segment
-            frames: Frames in the segment
-            
-        Returns:
-            List of anomaly descriptions
-        """
-        anomalies = []
-        activity = segment.activity.lower()
-        
-        # Define conflicting combinations
-        if "sitting" in activity and "walking" in activity:
-            anomalies.append("Sitting while Walking")
-        if "laying" in activity and ("walking" in activity or "jumping" in activity):
-            anomalies.append("Laying Down while Moving")
-        
-        return anomalies
     
     def _check_movement_intensity(
         self, 
@@ -282,7 +258,7 @@ class MovementCategorizer:
         frames: List[FrameInfo]
     ) -> List[str]:
         """
-        Check for unexpected movement intensity.
+        Check for unexpected movement intensity using velocity data.
         
         Args:
             segment: Current segment
@@ -293,40 +269,31 @@ class MovementCategorizer:
         """
         anomalies = []
         
-        if len(frames) < 2:
+        if not frames:
             return anomalies
-        
-        # Calculate average movement between frames
-        movements = []
-        for i in range(1, len(frames)):
-            prev_kps = frames[i-1].keypoints
-            curr_kps = frames[i].keypoints
             
-            if prev_kps is not None and curr_kps is not None:
-                # Calculate movement for visible keypoints
-                visible_movements = []
-                for j in range(min(len(prev_kps), len(curr_kps))):
-                    if (prev_kps[j][0] > 0 and prev_kps[j][1] > 0 and 
-                        curr_kps[j][0] > 0 and curr_kps[j][1] > 0):
-                        dist = np.sqrt(
-                            (curr_kps[j][0] - prev_kps[j][0])**2 + 
-                            (curr_kps[j][1] - prev_kps[j][1])**2
-                        )
-                        visible_movements.append(dist)
-                
-                if visible_movements:
-                    movements.append(np.mean(visible_movements))
+        # Filter out tracking errors for clean analysis
+        valid_frames = [f for f in frames if not f.is_tracking_error]
         
-        if not movements:
+        if len(valid_frames) < 2:
             return anomalies
         
-        avg_movement = np.mean(movements)
+        # Calculate average velocity
+        velocities = [f.velocity for f in valid_frames]
+        avg_velocity = np.mean(velocities)
+        
+        # Get threshold from config or default
+        # Use same threshold as anomaly detector for consistency
+        threshold = getattr(self._config.summary, 'ANOMALY_MOVEMENT_THRESHOLD', 50.0)
+        
         activity_lower = segment.activity.lower()
         
         # High movement but static activity
-        if avg_movement > 50 and ("sitting" in activity_lower or "standing" in activity_lower):
-            anomalies.append(f"High movement ({avg_movement:.1f}px) during {segment.activity}")
+        is_static = "sitting" in activity_lower or "standing" in activity_lower or "laying" in activity_lower
         
+        if avg_velocity > threshold and is_static:
+            anomalies.append(f"High movement ({avg_velocity:.1f}px/fr) during {segment.activity}")
+            
         return anomalies
     
     def _get_dominant_emotion(self, emotions: List[str]) -> str:
