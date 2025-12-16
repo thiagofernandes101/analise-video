@@ -22,6 +22,8 @@ from analyzers.emotion_analyzer import EmotionAnalyzer
 from activity_recognizer import ActivityRecognizer
 from visualizer import Visualizer
 from services.face_person_matcher import FacePersonMatcher
+from services.statistics_tracker import StatisticsTracker
+from ui.summary_window import SummaryWindow
 
 
 class VideoAnalysisApplication:
@@ -51,6 +53,7 @@ class VideoAnalysisApplication:
         self._activity_recognizer = ActivityRecognizer(self._config)
         self._visualizer = Visualizer(self._config)
         self._face_matcher = FacePersonMatcher()
+        self._statistics_tracker = StatisticsTracker(self._config)
         
         self._warmup_components()
     
@@ -87,6 +90,7 @@ class VideoAnalysisApplication:
                 frame_number += 1
         finally:
             self._cleanup(video_capture)
+            self._show_summary()
     
     def _process_next_frame(
         self, 
@@ -128,6 +132,14 @@ class VideoAnalysisApplication:
         # Visualize
         self._visualizer.render_frame(frame, persons, faces, activities, emotions)
         should_quit = self._visualizer.show_frame(frame, frame_number)
+        
+        # Track statistics
+        self._statistics_tracker.update(
+            frame_number=frame_number,
+            persons=persons,
+            activities=activities,
+            emotions=emotions
+        )
         
         return should_quit
     
@@ -326,6 +338,18 @@ class VideoAnalysisApplication:
         video_capture.release()
         self._visualizer.close()
         self._emotion_analyzer.stop()
+    
+    def _show_summary(self) -> None:
+        """Display video analysis summary window."""
+        print("\nGenerating summary...")
+        statistics = self._statistics_tracker.get_summary()
+        
+        print(f"Total frames analyzed: {statistics.total_frames}")
+        print(f"Persons detected: {statistics.get_person_count()}")
+        print(f"Anomalies detected: {statistics.get_anomaly_count()}")
+        
+        summary_window = SummaryWindow(self._config)
+        summary_window.show_and_wait(statistics)
 
 
 def main():

@@ -7,11 +7,15 @@ x-app-base: &app-base
     dockerfile: Dockerfile
   volumes:
     - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    - /mnt/wslg:/mnt/wslg:rw
     - ~/.deepface:/root/.deepface
     - ./src:/app/src
     - ./videos:/app/videos
   environment:
-    - DISPLAY=${DISPLAY}
+    - DISPLAY=${DISPLAY:-:0}
+    - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+    - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+    - PULSE_SERVER=${PULSE_SERVER}
     - TF_USE_LEGACY_KERAS=1
     - PYTHONPATH=/app/src
   network_mode: host

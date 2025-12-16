@@ -103,6 +103,70 @@ class VisualizationConfig:
     HUD_ALPHA: float = 0.6  # Transparency
 
 
+@dataclass
+class MovementDetectionConfig:
+    """Configuration for adaptive movement anomaly detection."""
+    # Intensity normalization ranges (what's considered "normal")
+    MIN_NORMAL_INTENSITY: float = 0.4   # 40% of expected movement
+    MAX_NORMAL_INTENSITY: float = 1.6   # 160% of expected movement
+    
+    # Statistical outlier detection
+    Z_SCORE_THRESHOLD: float = 3.0       # Standard deviations
+    MODIFIED_Z_SCORE_THRESHOLD: float = 3.5  # For MAD-based detection
+    
+    # Anomaly confidence threshold
+    MIN_ANOMALY_CONFIDENCE: float = 0.4  # Only store anomalies >= 40% confidence
+    
+    # Body part visibility threshold
+    KEYPOINT_VISIBILITY_THRESHOLD: float = 0.5  # Confidence score
+    MIN_VISIBLE_KEYPOINTS_RATIO: float = 0.5   # 50% of part's keypoints
+    
+    # Statistical history window
+    MOVEMENT_HISTORY_WINDOW: int = 30  # Frames to use for statistics
+    
+    # Velocity tracking
+    VELOCITY_HISTORY_WINDOW: int = 10  # Frames for velocity analysis
+    MAX_VALID_VELOCITY_PX_PER_FRAME: float = 100.0  # Max plausible movement
+    
+    # Acceleration thresholds
+    ACCELERATION_ANOMALY_THRESHOLD: float = 50.0  # pixels/frame²
+    JERK_ANOMALY_THRESHOLD: float = 30.0  # pixels/frame³
+    
+    # Occlusion handling
+    MIN_VISIBLE_PARTS_FOR_DETECTION: int = 2  # Minimum visible body parts
+    VISIBILITY_CONFIDENCE_BASE: float = 0.3  # Base confidence when partially visible
+    VISIBILITY_CONFIDENCE_SCALE: float = 0.7  # Scale factor for visibility
+    
+    # Tracking error filtering
+    MAX_KEYPOINT_JUMP_RATIO: float = 0.3  # Max jump as ratio of person bbox
+
+@dataclass
+class SummaryConfig:
+    """Configuration for summary window display."""
+    
+    # Anomaly detection thresholds
+    ANOMALY_MOVEMENT_THRESHOLD: float = 200.0  # pixels per frame (increased for less sensitivity)
+    ANOMALY_MIN_STABLE_FRAMES: int = 8  # Minimum frames to maintain activity (increased)
+    ANOMALY_MAX_TRANSITIONS: int = 6  # Max activity changes in window (increased)
+    ANOMALY_TRANSITION_WINDOW: int = 20  # Frame window for transition check (increased)
+    
+    # UI settings - Overview
+    SUMMARY_WINDOW_WIDTH: int = 700
+    SUMMARY_WINDOW_HEIGHT: int = 800
+    SUMMARY_FONT_SCALE: float = 0.6
+    SUMMARY_FONT_SCALE_LARGE: float = 0.8
+    SUMMARY_BAR_MAX_WIDTH: int = 400
+    SUMMARY_BUTTON_WIDTH: int = 200
+    SUMMARY_BUTTON_HEIGHT: int = 40
+    
+    # UI settings - Detailed View
+    DETAIL_WINDOW_WIDTH: int = 800
+    DETAIL_WINDOW_HEIGHT: int = 900
+    DETAIL_SCROLL_STEP: int = 30
+    DETAIL_INDENT: int = 20
+    DETAIL_FONT_SCALE: float = 0.55
+
+
 class Config:
     """
     Main configuration class providing access to all config domains.
@@ -110,18 +174,25 @@ class Config:
     This is the main entry point for configuration, maintaining backward
     compatibility while improving organization.
     """
-    
-    video = VideoConfig()
-    model = ModelConfig()
-    emotion = EmotionAnalysisConfig()
-    activity = ActivityRecognitionConfig()
-    visualization = VisualizationConfig()
+    def __init__(self):
+        self.video = VideoConfig()
+        self.model = ModelConfig()
+        self.emotion = EmotionAnalysisConfig()
+        self.activity = ActivityRecognitionConfig()
+        self.visualization = VisualizationConfig()
+        self.movement_detection = MovementDetectionConfig()
+        self.summary = SummaryConfig()
     
     # Backward compatibility properties
     @classmethod
     def get_video_path(cls) -> Optional[str]:
         """Find and return video path (backward compatibility)."""
-        return cls.video.find_video_path()
+        # Access the video config from an instance if Config is instantiated,
+        # or create a temporary one if accessed via class (for @classmethod)
+        if hasattr(cls, 'video'): # Check if class attribute exists (old style)
+            return cls.video.find_video_path()
+        else: # New style, requires instantiation
+            return Config().video.find_video_path()
     
     @property
     def YOLO_MODEL_SIZE(self) -> str:
