@@ -171,8 +171,61 @@ class ActionClassifier:
                 data = data.to(self.device)
                 
                 output = self.model(data)
-                pred_idx = output.argmax(dim=1).item()
-                return self.classes[pred_idx]
+                
+                # Get softmax probabilities
+                probabilities = F.softmax(output, dim=1)[0]
+                
+                # Get top-3 predictions
+                top3_probs, top3_indices = torch.topk(probabilities, 3)
+                
+                # Filter by confidence threshold
+                CONFIDENCE_THRESHOLD = 0.15  # Require at least 15% confidence
+                
+                # Check top predictions against plausible actions
+                PLAUSIBLE_ACTIONS = {
+                    # Core postures (always plausible)
+                    'sitting', 'standing', 'laying', ' laying', 'laying down',
+                    'walking', 'running', 'jogging',
+                    
+                    # Hand gestures
+                    'waving', 'waving hand', 'clapping', 'shaking hands',
+                    'pointing', 'applauding',
+                    
+                    # Office/Meeting actions
+                    'typing', 'reading', 'writing', 'using computer',
+                    'texting', 'talking', 'presenting',
+                    
+                    # Emotional/expressive
+                    'laughing', 'crying', 'yawning', 'sneezing',
+                    'headbanging', 'shaking head', 'nodding',
+                    
+                    # Physical
+                    'jumping', 'stretching', 'exercising',
+                    'falling', 'falling down',
+                    
+                    # Ignore these (unlikely in typical videos)
+                    # 'mowing lawn', 'frying vegetables', 'eating cake', 'cooking'
+                }
+                
+                # Try to find a plausible high-confidence action
+                for prob, idx in zip(top3_probs, top3_indices):
+                    if prob < CONFIDENCE_THRESHOLD:
+                        break
+                    
+                    action = self.classes[idx.item()].lower()
+                    
+                    # Check if action or any of its words are in plausible set
+                    is_plausible = any(
+                        plausible in action or action in plausible
+                        for plausible in PLAUSIBLE_ACTIONS
+                    )
+                    
+                    if is_plausible:
+                        # Return the first plausible action with sufficient confidence
+                        return self.classes[idx.item()]
+                
+                # No plausible action found - return None to use heuristic fallback
+                return None
                 
         except Exception as e:
             self.logger.error(f"Inference error: {e}")

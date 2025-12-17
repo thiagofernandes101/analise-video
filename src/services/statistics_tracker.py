@@ -202,9 +202,14 @@ class StatisticsTracker:
             # Retrieve last known action (Mitigation: Hold result)
             predicted_action = self._last_predicted_actions.get(track_id)
             
-            # --- Use Deep Learning action if available, otherwise fall back to heuristic ---
-            # This makes ST-GCN the primary activity source when the model is loaded
-            final_activity = predicted_action if predicted_action else activity_label
+            # --- Use Deep Learning action if available AND plausible, otherwise fall back to heuristic ---
+            # ST-GCN now returns None if prediction is not confident/plausible
+            # This creates a smart hybrid: DL for complex actions, heuristics for simple ones
+            if predicted_action and predicted_action not in ("Unknown (No Model)", "Error", None):
+                final_activity = predicted_action
+            else:
+                # Fall back to heuristic detector
+                final_activity = activity_label
             
             # --- Collect frame history ---
                 
