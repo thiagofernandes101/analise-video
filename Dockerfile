@@ -62,6 +62,12 @@ RUN pip install --no-cache-dir mtcnn retina-face gdown pandas tqdm Pillow lightp
 COPY src ./src
 COPY videos ./videos
 COPY *.pt ./
+# Download ST-GCN weights from Google Drive (official repository source)
+# Google Drive ID for st_gcn.kinetics.pt from https://github.com/yysijie/st-gcn
+RUN pip install -q gdown && \
+    gdown "https://drive.google.com/uc?id=1bMGaV9Fvp8HK5h04BHRvBkmQ8HxjyKyY" -O st_gcn_weights.pt --quiet || \
+    echo "Warning: Failed to download weights. App will run in placeholder mode."
+
 
 # 9. Comando Padrão
 CMD ["python", "src/main.py"]

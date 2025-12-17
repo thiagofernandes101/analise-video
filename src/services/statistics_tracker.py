@@ -52,6 +52,12 @@ class StatisticsTracker:
         from services.keypoint_smoother import KeypointSmoother
         self._keypoint_smoother = KeypointSmoother(self._config)
         
+        # Action Recognition (Deep Learning)
+        from services.action_classifier import ActionClassifier
+        self._action_classifier = ActionClassifier(self._config)
+        self._keypoint_buffers: Dict[int, deque] = {} # {track_id: deque of keypoints}
+        self._last_predicted_actions: Dict[int, str] = {} # {track_id: last_action}
+        
         # Legacy tracking data (still used for simple checks)
         self._last_keypoints: Dict[int, np.ndarray] = {}
         self._activity_history: Dict[int, deque] = {}
@@ -152,6 +158,55 @@ class StatisticsTracker:
             # Fallback to raw if smoothing yielded nothing (and raw is valid)
             if smoothed_emotion == "Unknown" and raw_emotion_label not in ("Unknown", "Analyzing"):
                 smoothed_emotion = raw_emotion_label
+            
+            # --- Action Recognition Inference ---
+            if track_id not in self._keypoint_buffers:
+                self._keypoint_buffers[track_id] = deque(maxlen=self._action_classifier.window_size)
+            
+            # Add smoothed keypoints to buffer (must be normalized? for now raw)
+            self._keypoint_buffers[track_id].append(person.keypoints)
+            
+            # --- Action Recognition Inference ---
+            if track_id not in self._keypoint_buffers:
+                self._keypoint_buffers[track_id] = deque(maxlen=self._action_classifier.window_size)
+            
+            # Add smoothed keypoints to buffer (must be normalized? for now raw)
+            self._keypoint_buffers[track_id].append(person.keypoints)
+            
+            # Trigger inference occasionally
+            if len(self._keypoint_buffers[track_id]) == self._action_classifier.window_size:
+                if frame_number % self._action_classifier.inference_interval == 0:
+                    buffer_array = np.array(self._keypoint_buffers[track_id])
+                    # Run ST-GCN inference
+                    raw_action = self._action_classifier.predict(buffer_array)
+                    
+                    # --- Composite Logic (Ensemble) ---
+                    # specific heuristic check for 'hand near face'
+                    # (simplified: if wrists [9,10] are close to nose [0] or ears [3,4])
+                    hand_near_face = False
+                    nose = person.keypoints[0]
+                    l_wrist = person.keypoints[9]
+                    r_wrist = person.keypoints[10]
+                    # Simple distance check (e.g. < 50 pixels)
+                    if (np.linalg.norm(nose - l_wrist) < 50) or (np.linalg.norm(nose - r_wrist) < 50):
+                         hand_near_face = True
+                         
+                    frame_context = {'hand_near_face': hand_near_face}
+                    
+                    from services.composite_action_recognizer import CompositeActionRecognizer
+                    refined_action = CompositeActionRecognizer.refine_action(raw_action, smoothed_emotion, frame_context)
+                    
+                    # Store result
+                    self._last_predicted_actions[track_id] = refined_action
+            
+            # Retrieve last known action (Mitigation: Hold result)
+            predicted_action = self._last_predicted_actions.get(track_id)
+            
+            # --- Use Deep Learning action if available, otherwise fall back to heuristic ---
+            # This makes ST-GCN the primary activity source when the model is loaded
+            final_activity = predicted_action if predicted_action else activity_label
+            
+            # --- Collect frame history ---
                 
             # Add to person stats if valid
             if smoothed_emotion not in ("Unknown", "Analyzing"):
@@ -162,18 +217,28 @@ class StatisticsTracker:
                     self._statistics.emotion_distribution[smoothed_emotion] = 0
                 self._statistics.emotion_distribution[smoothed_emotion] += 1
             
+            # Add activity to global distribution (using the final activity)
+            if final_activity and final_activity not in ("Unknown", "Unknown (No Model)"):
+                person_stats.add_activity(final_activity)
+                if final_activity not in self._statistics.activity_distribution:
+                    self._statistics.activity_distribution[final_activity] = 0
+                self._statistics.activity_distribution[final_activity] += 1
+            
             # Collect frame history for movement categorization
             # Use smoothed emotion for history to clean up timeline
             frame_emotion = smoothed_emotion if smoothed_emotion != "Unknown" else raw_emotion_label
             
+            # Store the FINAL activity (DL or heuristic) as the main activity field
+            # This ensures MovementCategorizer and reports use the correct source
             person_stats.add_frame_info(
                 frame=frame_number,
                 emotion=frame_emotion,
                 keypoints=person.keypoints,
-                activity=activity_label,
+                activity=final_activity,  # Use DL prediction if available
                 velocity=derivatives.velocity,
                 is_sudden_movement=derivatives.is_sudden_movement,
-                is_tracking_error=derivatives.is_tracking_error
+                is_tracking_error=derivatives.is_tracking_error,
+                predicted_action=predicted_action  # Keep original for reference
             )
             
             # Update previous keypoints state
