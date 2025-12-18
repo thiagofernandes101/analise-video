@@ -62,18 +62,56 @@ class SummaryWindow:
         print(f"  - In Docker: {in_docker}")
         print(f"  - /.dockerenv exists: {os.path.exists('/.dockerenv')}")
         
-        # Always use GUI window in Docker (Tkinter works with WSLg)
-        if in_docker and display_available:
-            print("[INFO] Running in Docker with DISPLAY - attempting GUI window")
+        # If in Docker, save to files instead of showing GUI
+        if in_docker:
+            print("\n[INFO] Running in Docker - exporting summary to files...")
             try:
-                from ui.summary_gui_window import SummaryGUIWindow
-                gui = SummaryGUIWindow()
-                gui.show(statistics)
+                from ui.file_summary_exporter import FileSummaryExporter
+                
+                # Create output directory if it doesn't exist
+                output_dir = "/app/output"
+                os.makedirs(output_dir, exist_ok=True)
+                
+                # Export to both text and JSON
+                text_path = os.path.join(output_dir, "summary.txt")
+                json_path = os.path.join(output_dir, "summary.json")
+                
+                FileSummaryExporter.export_to_text(statistics, text_path)
+                FileSummaryExporter.export_to_json(statistics, json_path)
+                
+                print(f"\n📄 Summary files created:")
+                print(f"   - Text: {text_path}")
+                print(f"   - JSON: {json_path}")
+                print("\n💡 Tip: You can access these files from your host machine")
+                print("    at ./output/summary.txt and ./output/summary.json")
+                print("\n" + "="*80)
+                
+                # Also print a quick summary to console
+                print("\n📊 QUICK SUMMARY:")
+                print(f"   Total Frames:       {statistics.total_frames}")
+                print(f"   Persons Detected:   {statistics.get_person_count()}")
+                print(f"   Anomalies Detected: {statistics.get_anomaly_count()}")
+                
+                # Top activities
+                print("\n🏃 Top 5 Activities:")
+                for activity, count in statistics.get_top_activities()[:5]:
+                    print(f"   • {activity}: {count}")
+                
+                # Top emotions
+                print("\n😊 Top 5 Emotions:")
+                for emotion, count in statistics.get_top_emotions()[:5]:
+                    print(f"   • {emotion}: {count}")
+                
+                print("\n" + "="*80)
+                print("✅ Analysis complete! Check the files above for full details.")
+                print("="*80 + "\n")
+                
                 return
             except Exception as e:
-                print(f"\n⚠️  GUI window failed: {e}")
+                print(f"\n⚠️  File export failed: {e}")
                 print("Falling back to terminal UI...")
                 traceback.print_exc()
+                # Fall through to terminal UI
         
         # Fallback to terminal UI  
         if in_docker or not display_available:

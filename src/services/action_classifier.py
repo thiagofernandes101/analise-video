@@ -4,6 +4,7 @@ Action Classifier Service.
 Uses an ST-GCN model (or fallback) to classify actions from skeleton sequences.
 """
 import torch
+import torch.nn.functional as F
 import numpy as np
 from typing import List, Optional, Dict, Deque
 from collections import deque

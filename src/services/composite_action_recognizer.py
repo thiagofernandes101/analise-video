@@ -16,13 +16,18 @@ class CompositeActionRecognizer:
         Refine the action label based on context.
         
         Args:
-            stgcn_action: Label from ST-GCN (e.g., "sitting", "waving hand")
+            stgcn_action: Label from ST-GCN (e.g., "sitting", "waving hand"), or None
             emotion: Detected emotion (e.g., "happy", "sad")
             frame_info: Dictionary containing other context (e.g., hand_near_face)
             
         Returns:
             Refined action label (e.g., "Crying on Sofa")
         """
+        # Handle None case from ST-GCN (low confidence or implausible action)
+        if stgcn_action is None:
+            # Fall back to emotion-based action
+            return f"Unknown Action ({emotion.title()})"
+        
         stgcn_action = stgcn_action.lower()
         emotion = emotion.lower()
         
