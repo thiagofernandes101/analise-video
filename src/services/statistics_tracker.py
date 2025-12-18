@@ -18,7 +18,7 @@ from models.anomaly_score import AnomalyScorer
 from services.bodypart_tracker import BodyPartTracker
 from services.statistical_detector import StatisticalAnomalyDetector
 from services.movement_categorizer import MovementCategorizer
-from services.velocity_tracker import VelocityTracker
+from services.velocity_tracker import VelocityTracker, MovementDerivatives
 from config import Config
 
 
@@ -43,9 +43,14 @@ class StatisticsTracker:
         self._statistics = VideoStatistics()
         
         # Adaptive detection systems
+        # Adaptive detection systems
         self._bodypart_tracker = BodyPartTracker(self._config)
         self._statistical_detector = StatisticalAnomalyDetector(self._config)
         self._velocity_tracker = VelocityTracker(self._config)
+        
+        # Keypoint smoothing (Kalman Filter)
+        from services.keypoint_smoother import KeypointSmoother
+        self._keypoint_smoother = KeypointSmoother(self._config)
         
         # Legacy tracking data (still used for simple checks)
         self._last_keypoints: Dict[int, np.ndarray] = {}
@@ -56,6 +61,10 @@ class StatisticsTracker:
         
         # Current frame number
         self._current_frame = 0
+        
+        # Emotion smoothing buffer: {track_id: deque([emotions])}
+        self._emotion_buffers: Dict[int, deque] = {}
+        self._emotion_window_size = getattr(self._config.summary, 'EMOTION_SMOOTHING_WINDOW', 30)
     
     def update(
         self,
@@ -83,10 +92,25 @@ class StatisticsTracker:
             if track_id not in self._statistics.person_stats:
                 self._statistics.person_stats[track_id] = PersonStatistics(track_id)
             
+            # Apply Kalman Smoothing to keypoints
+            smoothed_kpts = self._keypoint_smoother.smooth(track_id, person.keypoints)
+            person.keypoints = smoothed_kpts # Update person object with smoothed data
+            
             person_stats = self._statistics.person_stats[track_id]
             person_stats.frame_count += 1
             
+            # Calculate movement and velocity
+            prev_keypoints = self._last_keypoints.get(track_id)
+            current_movement = 0.0
+            
+            if prev_keypoints is not None:
+                current_movement = self._calculate_movement(prev_keypoints, person.keypoints)
+            
+            # Update velocity statistics
+            derivatives = self._velocity_tracker.update(track_id, current_movement)
+            
             # Update activity tracking
+            activity_label = None
             if track_id in activities:
                 activity = activities[track_id]
                 activity_label = activity.get_display_label()
@@ -99,41 +123,68 @@ class StatisticsTracker:
                     self._statistics.activity_distribution[activity_label] = 0
                 self._statistics.activity_distribution[activity_label] += 1
                 
-                # Check for anomalies
-                anomaly = self._detect_anomaly(person, activity)
+                # Check for anomalies (pass derivatives)
+                anomaly = self._detect_anomaly(person, activity, current_movement, derivatives)
                 if anomaly:
                     person_stats.add_anomaly(anomaly)
                     self._statistics.all_anomalies.append(anomaly)
             
             # Update emotion tracking
+            raw_emotion_label = "Unknown"
             if track_id in emotions:
-                emotion = emotions[track_id]
-                emotion_label = emotion.emotion
+                raw_emotion_label = emotions[track_id].emotion
+            
+            # Smooth emotion
+            if track_id not in self._emotion_buffers:
+                self._emotion_buffers[track_id] = deque(maxlen=self._emotion_window_size)
+            
+            # Don't buffer 'Analyzing' or 'Unknown' to keep signal clear
+            if raw_emotion_label not in ("Unknown", "Analyzing"):
+                self._emotion_buffers[track_id].append(raw_emotion_label)
+            
+            # Determine smoothed emotion
+            smoothed_emotion = "Unknown"
+            if self._emotion_buffers[track_id]:
+                from collections import Counter
+                counter = Counter(self._emotion_buffers[track_id])
+                smoothed_emotion = counter.most_common(1)[0][0]
+            
+            # Fallback to raw if smoothing yielded nothing (and raw is valid)
+            if smoothed_emotion == "Unknown" and raw_emotion_label not in ("Unknown", "Analyzing"):
+                smoothed_emotion = raw_emotion_label
                 
-                # Add to person stats
-                person_stats.add_emotion(emotion_label)
+            # Add to person stats if valid
+            if smoothed_emotion not in ("Unknown", "Analyzing"):
+                person_stats.add_emotion(smoothed_emotion)
                 
-                # Update global distribution (only if confident)
-                if emotion_label != "Unknown" and emotion_label != "Analyzing":
-                    if emotion_label not in self._statistics.emotion_distribution:
-                        self._statistics.emotion_distribution[emotion_label] = 0
-                    self._statistics.emotion_distribution[emotion_label] += 1
-            else:
-                emotion_label = "Unknown"
+                # Update global distribution
+                if smoothed_emotion not in self._statistics.emotion_distribution:
+                    self._statistics.emotion_distribution[smoothed_emotion] = 0
+                self._statistics.emotion_distribution[smoothed_emotion] += 1
             
             # Collect frame history for movement categorization
-            activity_label = activities[track_id].get_display_label() if track_id in activities else None
+            # Use smoothed emotion for history to clean up timeline
+            frame_emotion = smoothed_emotion if smoothed_emotion != "Unknown" else raw_emotion_label
+            
             person_stats.add_frame_info(
                 frame=frame_number,
-                emotion=emotion_label,
+                emotion=frame_emotion,
                 keypoints=person.keypoints,
-                activity=activity_label
+                activity=activity_label,
+                velocity=derivatives.velocity,
+                is_sudden_movement=derivatives.is_sudden_movement,
+                is_tracking_error=derivatives.is_tracking_error
             )
+            
+            # Update previous keypoints state
+            self._last_keypoints[track_id] = person.keypoints.copy()
     
     def _detect_anomaly(
         self,
         person: PersonTracking,
-        activity: ActivityResult
+        activity: ActivityResult,
+        total_movement: float,
+        derivatives: MovementDerivatives
     ) -> Optional[AnomalyEvent]:
         """
         Detect anomaly using multi-layer adaptive detection.
@@ -151,6 +202,8 @@ class StatisticsTracker:
         Args:
             person: Person tracking data
             activity: Current activity result
+            total_movement: Pre-calculated total movement
+            derivatives: Pre-calculated velocity derivatives
             
         Returns:
             AnomalyEvent if anomaly detected with confidence >= threshold, None otherwise
@@ -158,9 +211,9 @@ class StatisticsTracker:
         track_id = person.track_id
         activity_label = activity.get_display_label()
         
-        # Skip if no previous keypoints
+        # Get previous keypoints for body part tracking
+        # Note: _last_keypoints is managed by the caller (update method)
         if track_id not in self._last_keypoints:
-            self._last_keypoints[track_id] = person.keypoints.copy()
             return None
         
         prev_keypoints = self._last_keypoints[track_id]
@@ -173,7 +226,6 @@ class StatisticsTracker:
         
         # If tracking error detected, create immediate anomaly event
         if not is_valid_track:
-            self._last_keypoints[track_id] = person.keypoints.copy()
             return AnomalyEvent(
                 frame_number=self._current_frame,
                 track_id=track_id,
@@ -195,7 +247,6 @@ class StatisticsTracker:
         
         if not bodypart_analysis:
             # No visible body parts - skip
-            self._last_keypoints[track_id] = person.keypoints.copy()
             return None
         
         # Get visible body parts for occlusion handling
@@ -207,11 +258,7 @@ class StatisticsTracker:
         # If visibility is too low, skip anomaly detection to prevent false positives
         min_parts = self._config.movement_detection.MIN_VISIBLE_PARTS_FOR_DETECTION
         if len(visible_parts) < min_parts:
-            self._last_keypoints[track_id] = person.keypoints.copy()
             return None
-        
-        # Calculate total movement (for statistical detection)
-        total_movement = self._calculate_movement(prev_keypoints, person.keypoints)
         
         # Get anomalous body parts
         anomalous_parts = self._bodypart_tracker.get_anomalous_parts(bodypart_analysis)
@@ -231,10 +278,7 @@ class StatisticsTracker:
         activity_exceeded = total_movement > threshold
         
         # LAYER 4: Velocity & acceleration analysis
-        derivatives = self._velocity_tracker.update(
-            track_id=track_id,
-            current_movement=total_movement
-        )
+        # (Derivatives passed in)
         is_velocity_anomaly = derivatives.is_sudden_movement or derivatives.is_tracking_error
         velocity_score = derivatives.get_anomaly_score()
         
@@ -261,9 +305,7 @@ class StatisticsTracker:
             trend_strength=trend_strength,
             visibility_confidence=visibility_confidence
         )
-        
-        # Store keypoints for next frame
-        self._last_keypoints[track_id] = person.keypoints.copy()
+        # remove self._last_keypoints updates as strictly managed by caller now
         
         # Only return anomaly if confidence >= threshold
         min_confidence = self._config.movement_detection.MIN_ANOMALY_CONFIDENCE
@@ -407,7 +449,17 @@ class StatisticsTracker:
         Returns:
             VideoStatistics object with all collected data
         """
-        # Run movement categorization for all persons
+        # Filter out short tracks to reduce noise
+        min_frames = getattr(self._config.movement_detection, 'MIN_TRACK_FRAMES', 30)
+        
+        valid_persons = {}
+        for track_id, stats in self._statistics.person_stats.items():
+            if stats.frame_count >= min_frames:
+                valid_persons[track_id] = stats
+        
+        self._statistics.person_stats = valid_persons
+        
+        # Run movement categorization for all valid persons
         for person_stats in self._statistics.person_stats.values():
             self._movement_categorizer.categorize(person_stats)
         

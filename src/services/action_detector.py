@@ -170,7 +170,21 @@ class ActionDetector:
         threshold = self._config.activity.WALKING_ANKLE_VARIANCE
         
         if left_variance > threshold or right_variance > threshold:
-            return "Walking"
+            # Secondary check: Center of Mass displacement
+            # Verify body is actually moving, not just ankles jittering
+            hip_x_positions = [(kps[11][0] + kps[12][0]) / 2 for kps in history]
+            hip_y_positions = [(kps[11][1] + kps[12][1]) / 2 for kps in history]
+            
+            # Calculate total displacement
+            start_x, start_y = hip_x_positions[0], hip_y_positions[0]
+            end_x, end_y = hip_x_positions[-1], hip_y_positions[-1]
+            displacement = np.sqrt((end_x - start_x)**2 + (end_y - start_y)**2)
+            
+            # Minimum displacement threshold (e.g., 20 pixels over 15 frames)
+            min_displacement = getattr(self._config.activity, 'WALKING_MIN_DISPLACEMENT', 15.0)
+            
+            if displacement > min_displacement:
+                return "Walking"
         
         return None
     
