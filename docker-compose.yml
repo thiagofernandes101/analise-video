@@ -11,6 +11,8 @@ x-app-base: &app-base
     - ~/.deepface:/root/.deepface
     - ./src:/app/src
     - ./videos:/app/videos
+    - ./output:/app/output
+    - ./st_gcn_weights.pt:/app/st_gcn_weights.pt:ro
   environment:
     - DISPLAY=${DISPLAY:-:0}
     - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}

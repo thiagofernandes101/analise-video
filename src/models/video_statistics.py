@@ -54,6 +54,7 @@ class FrameInfo:
     velocity: float = 0.0
     is_sudden_movement: bool = False
     is_tracking_error: bool = False
+    predicted_action: Optional[str] = None  # Action from Deep Learning model
 
 
 @dataclass
@@ -134,16 +135,9 @@ class PersonStatistics:
             return "Nenhuma atividade detectada"
         return ", ".join(self.activities)
     
-    def add_frame_info(
-        self, 
-        frame: int, 
-        emotion: str, 
-        keypoints: np.ndarray, 
-        activity: Optional[str] = None,
-        velocity: float = 0.0,
-        is_sudden_movement: bool = False,
-        is_tracking_error: bool = False
-    ) -> None:
+    def add_frame_info(self, frame: int, emotion: str, keypoints: np.ndarray, activity: Optional[str] = None, 
+                      velocity: float = 0.0, is_sudden_movement: bool = False, is_tracking_error: bool = False,
+                      predicted_action: Optional[str] = None) -> None:
         """Add frame data to history."""
         self.frame_history.append(FrameInfo(
             frame=frame,
@@ -152,7 +146,8 @@ class PersonStatistics:
             activity=activity,
             velocity=velocity,
             is_sudden_movement=is_sudden_movement,
-            is_tracking_error=is_tracking_error
+            is_tracking_error=is_tracking_error,
+            predicted_action=predicted_action
         ))
     
     def get_segments_display(self, fps: float = 30.0) -> List[str]:

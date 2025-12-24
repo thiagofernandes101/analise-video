@@ -1,0 +1,1010 @@
+{
+  "timestamp": "2025-12-24T01:48:29.011414",
+  "overview": {
+    "total_frames": 3326,
+    "persons_detected": 33,
+    "anomalies_detected": 8
+  },
+  "top_activities": [
+    {
+      "activity": "Sitting",
+      "count": 4236
+    },
+    {
+      "activity": "Unknown Action (Neutral)",
+      "count": 1358
+    },
+    {
+      "activity": "Unknown Action (Sad)",
+      "count": 1246
+    },
+    {
+      "activity": "Standing",
+      "count": 930
+    },
+    {
+      "activity": "Standing, Walking",
+      "count": 877
+    }
+  ],
+  "top_emotions": [
+    {
+      "emotion": "neutral",
+      "count": 1485
+    },
+    {
+      "emotion": "sad",
+      "count": 1477
+    },
+    {
+      "emotion": "fear",
+      "count": 856
+    },
+    {
+      "emotion": "happy",
+      "count": 757
+    },
+    {
+      "emotion": "angry",
+      "count": 403
+    }
+  ],
+  "persons": [
+    {
+      "track_id": 1,
+      "frame_count": 179,
+      "emotions": "Analyzing..., sad, neutral, fear",
+      "activities": "Standing, Standing, Walking, Sitting, Unknown Action (Sad), Unknown Action (Neutral), Unknown Action (Fear)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1,
+          "end_frame": 18,
+          "activity": "Standing",
+          "emotion": "Analyzing...",
+          "anomalies": []
+        },
+        {
+          "start_frame": 45,
+          "end_frame": 149,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 2,
+      "frame_count": 179,
+      "emotions": "Analyzing..., fear, sad",
+      "activities": "Standing, Standing, Walking, Unknown Action (Fear), Sitting, Unknown Action (Sad)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1,
+          "end_frame": 29,
+          "activity": "Standing",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 30,
+          "end_frame": 104,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 105,
+          "end_frame": 179,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 3,
+      "frame_count": 53,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Standing, Sitting, Unknown Action (Unknown)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1,
+          "end_frame": 22,
+          "activity": "Standing",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 30,
+          "end_frame": 53,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "Unknown",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 4,
+      "frame_count": 110,
+      "emotions": "Analyzing..., angry, sad",
+      "activities": "Unknown Action (Angry), Unknown Action (Sad), Sitting",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1,
+          "end_frame": 29,
+          "activity": "Unknown",
+          "emotion": "angry",
+          "anomalies": []
+        },
+        {
+          "start_frame": 45,
+          "end_frame": 110,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 6,
+      "frame_count": 143,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Sitting, Standing, Walking, Unknown Action (Unknown), Sitting, Waving Head",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 35,
+          "end_frame": 74,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 75,
+          "end_frame": 179,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "Unknown",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 7,
+      "frame_count": 252,
+      "emotions": "angry, happy, neutral",
+      "activities": "Unknown Action (Angry), Unknown Action (Happy), Standing, Walking, Standing, Waving Hand, Standing, Standing, Jumping, Standing, Waving Head, Laying Down",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 108,
+          "end_frame": 149,
+          "activity": "Unknown",
+          "emotion": "angry",
+          "anomalies": []
+        },
+        {
+          "start_frame": 165,
+          "end_frame": 359,
+          "activity": "Unknown Action (Happy)",
+          "emotion": "happy",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 20,
+      "frame_count": 82,
+      "emotions": "angry, surprise, sad, happy, neutral",
+      "activities": "Standing, Sitting, Hands Up, Standing, Hands Up, Standing, Walking, Sitting, Waving Hand, Standing, Waving Hand, Unknown Action (Angry), Unknown Action (Surprise), Unknown Action (Sad), Laying Down, Waving Hand, Unknown Action (Happy), Laying Down, Jumping",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 545,
+          "end_frame": 569,
+          "activity": "Standing, Walking",
+          "emotion": "angry",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 23,
+      "frame_count": 278,
+      "emotions": "neutral, sad, angry, happy",
+      "activities": "Laying Down, Hands Up, Standing, Hands Up, Laying Down, Waving Hand, Standing, Walking, Sitting, Waving Hand, Standing, Sitting, Unknown Action (Sad), Unknown Action (Angry), Standing, Waving Hand, Unknown Action (Happy), Unknown Action (Neutral)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 636,
+          "end_frame": 651,
+          "activity": "Standing, Walking",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 660,
+          "end_frame": 689,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 690,
+          "end_frame": 719,
+          "activity": "Unknown Action (Angry)",
+          "emotion": "angry",
+          "anomalies": []
+        },
+        {
+          "start_frame": 720,
+          "end_frame": 764,
+          "activity": "Unknown Action (Happy)",
+          "emotion": "happy",
+          "anomalies": []
+        },
+        {
+          "start_frame": 765,
+          "end_frame": 884,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 24,
+      "frame_count": 179,
+      "emotions": "surprise, fear",
+      "activities": "Standing, Standing, Walking, Unknown Action (Surprise), Unknown Action (Fear), Standing, Hands Up",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 930,
+          "end_frame": 1004,
+          "activity": "Unknown Action (Surprise)",
+          "emotion": "surprise",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1005,
+          "end_frame": 1034,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1035,
+          "end_frame": 1079,
+          "activity": "Unknown Action (Surprise)",
+          "emotion": "surprise",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 25,
+      "frame_count": 629,
+      "emotions": "neutral, happy, sad, angry, fear, surprise",
+      "activities": "Laying Down, Unknown Action (Neutral), Laying Down, Waving Hand, Laying Down, Jumping, Laying Down, Hands Up, Standing, Walking, Sitting, Waving Hand, Sitting, Hands Up, Unknown Action (Sad), Unknown Action (Happy), Standing, Hands Up, Sitting, Waving Head, Unknown Action (Angry), Unknown Action (Fear), Standing, Sitting, Standing, Waving Head, Standing, Jumping",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1081,
+          "end_frame": 1109,
+          "activity": "Laying Down",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1110,
+          "end_frame": 1274,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1305,
+          "end_frame": 1334,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1380,
+          "end_frame": 1499,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1500,
+          "end_frame": 1649,
+          "activity": "Unknown Action (Happy)",
+          "emotion": "happy",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1650,
+          "end_frame": 1709,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 26,
+      "frame_count": 119,
+      "emotions": "happy, fear, sad",
+      "activities": "Sitting, Hands Up, Standing, Hands Up, Standing, Walking, Laying Down, Waving Hand, Sitting, Waving Hand, Sitting, Jumping, Laying Down, Jumping, Unknown Action (Happy), Unknown Action (Fear), Standing, Waving Hand, Unknown Action (Sad)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1755,
+          "end_frame": 1799,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1800,
+          "end_frame": 1829,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 27,
+      "frame_count": 335,
+      "emotions": "neutral, surprise",
+      "activities": "Sitting, Sitting, Waving Head, Sitting, Jumping, Unknown Action (Unknown), Unknown Action (Neutral), Unknown Action (Surprise)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1851,
+          "end_frame": 1874,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1875,
+          "end_frame": 2024,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2025,
+          "end_frame": 2189,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 28,
+      "frame_count": 359,
+      "emotions": "angry, fear, sad, surprise, neutral, happy",
+      "activities": "Sitting, Unknown Action (Angry), Unknown Action (Sad), Standing, Jumping, Standing, Walking, Standing, Unknown Action (Fear), Unknown Action (Surprise), Unknown Action (Neutral)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 1831,
+          "end_frame": 1859,
+          "activity": "Sitting",
+          "emotion": "angry",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1860,
+          "end_frame": 1964,
+          "activity": "Unknown Action (Angry)",
+          "emotion": "angry",
+          "anomalies": []
+        },
+        {
+          "start_frame": 1965,
+          "end_frame": 2039,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2040,
+          "end_frame": 2084,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2085,
+          "end_frame": 2114,
+          "activity": "Unknown Action (Angry)",
+          "emotion": "angry",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2145,
+          "end_frame": 2189,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 31,
+      "frame_count": 110,
+      "emotions": "sad, angry, neutral",
+      "activities": "Standing, Standing, Walking, Unknown Action (Sad), Unknown Action (Angry), Standing, Hands Up, Sitting",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2201,
+          "end_frame": 2219,
+          "activity": "Standing, Walking",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2235,
+          "end_frame": 2279,
+          "activity": "Unknown Action (Angry)",
+          "emotion": "angry",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2280,
+          "end_frame": 2318,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 32,
+      "frame_count": 569,
+      "emotions": "fear, neutral, angry, sad, surprise",
+      "activities": "Sitting, Sitting, Waving Head, Unknown Action (Unknown), Unknown Action (Fear), Unknown Action (Neutral), Standing, Walking, Standing, Unknown Action (Sad), Unknown Action (Surprise)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2191,
+          "end_frame": 2210,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2235,
+          "end_frame": 2264,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2265,
+          "end_frame": 2429,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2430,
+          "end_frame": 2459,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2490,
+          "end_frame": 2759,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 35,
+      "frame_count": 87,
+      "emotions": "neutral, angry, sad",
+      "activities": "Standing, Standing, Walking, Standing, Hands Up, Unknown Action (Neutral), Unknown Action (Angry)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2325,
+          "end_frame": 2354,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 37,
+      "frame_count": 87,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Sitting, Hands Up, Unknown Action (Unknown), Sitting, Waving Hand, Sitting, Sitting, Waving Head",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2401,
+          "end_frame": 2429,
+          "activity": "Sitting, Hands Up",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2430,
+          "end_frame": 2487,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "Unknown",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 41,
+      "frame_count": 340,
+      "emotions": "sad, fear, neutral",
+      "activities": "Sitting, Unknown Action (Sad), Sitting, Waving Head, Sitting, Waving Hand, Sitting, Hands Up, Unknown Action (Fear)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2418,
+          "end_frame": 2459,
+          "activity": "Sitting",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2460,
+          "end_frame": 2609,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2610,
+          "end_frame": 2759,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 49,
+      "frame_count": 237,
+      "emotions": "fear",
+      "activities": "Sitting, Unknown Action (Unknown), Sitting, Waving Hand, Sitting, Hands Up, Unknown Action (Fear)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2514,
+          "end_frame": 2564,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2565,
+          "end_frame": 2594,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2595,
+          "end_frame": 2759,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 56,
+      "frame_count": 179,
+      "emotions": "sad, fear",
+      "activities": "Sitting, Unknown Action (Sad)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2581,
+          "end_frame": 2609,
+          "activity": "Sitting",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2610,
+          "end_frame": 2759,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 58,
+      "frame_count": 31,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Sitting, Hands Up, Sitting, Sitting, Jumping, Sitting, Waving Hand",
+      "anomalies": [
+        {
+          "frame": 2740,
+          "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 866.07"
+        },
+        {
+          "frame": 2741,
+          "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 2.49"
+        }
+      ],
+      "movement_segments": []
+    },
+    {
+      "track_id": 59,
+      "frame_count": 31,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Sitting, Sitting, Jumping",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2729,
+          "end_frame": 2759,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 63,
+      "frame_count": 128,
+      "emotions": "happy, sad, neutral",
+      "activities": "Standing, Unknown Action (Happy), Standing, Hands Up, Standing, Walking, Unknown Action (Neutral), Unknown Action (Sad), Sitting, Sitting, Hands Up",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2761,
+          "end_frame": 2789,
+          "activity": "Standing",
+          "emotion": "happy",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2790,
+          "end_frame": 2849,
+          "activity": "Unknown Action (Happy)",
+          "emotion": "happy",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2865,
+          "end_frame": 2888,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 69,
+      "frame_count": 172,
+      "emotions": "neutral",
+      "activities": "Sitting, Unknown Action (Unknown), Unknown Action (Neutral)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2941,
+          "end_frame": 2969,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2985,
+          "end_frame": 3119,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 70,
+      "frame_count": 179,
+      "emotions": "happy",
+      "activities": "Sitting, Unknown Action (Unknown), Unknown Action (Happy), Sitting, Waving Head",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2941,
+          "end_frame": 2969,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2970,
+          "end_frame": 2999,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "happy",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3000,
+          "end_frame": 3119,
+          "activity": "Unknown Action (Happy)",
+          "emotion": "happy",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 71,
+      "frame_count": 347,
+      "emotions": "neutral, fear, happy, angry, sad",
+      "activities": "Sitting, Standing, Standing, Walking, Unknown Action (Unknown), Unknown, Hands Up, Unknown, Waving Head, Unknown Action (Neutral), Unknown Action (Fear), Sitting, Waving Head, Unknown Action (Happy), Unknown Action (Angry), Unknown Action (Sad)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 2962,
+          "end_frame": 2984,
+          "activity": "Unknown",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 2985,
+          "end_frame": 3119,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3135,
+          "end_frame": 3194,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 74,
+      "frame_count": 114,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Sitting, Sitting, Waving Head, Unknown Action (Unknown), Sitting, Jumping",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 3006,
+          "end_frame": 3028,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3045,
+          "end_frame": 3119,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "Unknown",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 97,
+      "frame_count": 219,
+      "emotions": "Analyzing..., sad, neutral, angry",
+      "activities": "Sitting, Unknown Action (Sad), Sitting, Waving Head, Standing, Walking, Standing",
+      "anomalies": [
+        {
+          "frame": 3120,
+          "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 45.35"
+        },
+        {
+          "frame": 3121,
+          "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 2.80"
+        }
+      ],
+      "movement_segments": [
+        {
+          "start_frame": 3090,
+          "end_frame": 3149,
+          "activity": "Sitting",
+          "emotion": "sad",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3150,
+          "end_frame": 3325,
+          "activity": "Unknown Action (Sad)",
+          "emotion": "sad",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 100,
+      "frame_count": 179,
+      "emotions": "fear, neutral, angry, sad",
+      "activities": "Sitting, Unknown Action (Fear), Unknown Action (Neutral), Unknown Action (Angry)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 3121,
+          "end_frame": 3149,
+          "activity": "Sitting",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3150,
+          "end_frame": 3179,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3180,
+          "end_frame": 3239,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3240,
+          "end_frame": 3284,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 101,
+      "frame_count": 75,
+      "emotions": "neutral, sad",
+      "activities": "Sitting, Unknown Action (Neutral), Sitting, Waving Head, Unknown Action (Sad)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 3121,
+          "end_frame": 3149,
+          "activity": "Sitting",
+          "emotion": "neutral",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3150,
+          "end_frame": 3195,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 102,
+      "frame_count": 179,
+      "emotions": "fear, neutral, sad",
+      "activities": "Sitting, Unknown Action (Fear), Unknown Action (Neutral), Sitting, Hands Up, Standing, Walking, Standing, Unknown Action (Sad)",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 3121,
+          "end_frame": 3149,
+          "activity": "Sitting",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3150,
+          "end_frame": 3179,
+          "activity": "Unknown Action (Fear)",
+          "emotion": "fear",
+          "anomalies": []
+        },
+        {
+          "start_frame": 3180,
+          "end_frame": 3284,
+          "activity": "Unknown Action (Neutral)",
+          "emotion": "neutral",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 104,
+      "frame_count": 33,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Sitting, Standing, Jumping, Sitting, Jumping",
+      "anomalies": [
+        {
+          "frame": 3183,
+          "explanation": "Tracking error: 16 keypoints jumped impossibly"
+        }
+      ],
+      "movement_segments": [
+        {
+          "start_frame": 3189,
+          "end_frame": 3214,
+          "activity": "Sitting",
+          "emotion": "Unknown",
+          "anomalies": []
+        }
+      ]
+    },
+    {
+      "track_id": 112,
+      "frame_count": 64,
+      "emotions": "Nenhuma emoção detectada",
+      "activities": "Standing, Standing, Hands Up, Standing, Walking, Sitting, Waving Hand, Standing, Waving Hand, Sitting, Hands Up, Sitting, Unknown Action (Unknown), Sitting, Jumping",
+      "anomalies": [],
+      "movement_segments": [
+        {
+          "start_frame": 3270,
+          "end_frame": 3299,
+          "activity": "Unknown Action (Unknown)",
+          "emotion": "Unknown",
+          "anomalies": []
+        }
+      ]
+    }
+  ],
+  "all_anomalies": [
+    {
+      "frame": 2420,
+      "person_id": 42,
+      "explanation": "Tracking error: 16 keypoints jumped impossibly"
+    },
+    {
+      "frame": 2468,
+      "person_id": 43,
+      "explanation": "Tracking error: 6 keypoints jumped impossibly"
+    },
+    {
+      "frame": 2515,
+      "person_id": 50,
+      "explanation": "Tracking error: 6 keypoints jumped impossibly"
+    },
+    {
+      "frame": 2740,
+      "person_id": 58,
+      "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 866.07"
+    },
+    {
+      "frame": 2741,
+      "person_id": 58,
+      "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 2.49"
+    },
+    {
+      "frame": 3120,
+      "person_id": 97,
+      "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 45.35"
+    },
+    {
+      "frame": 3121,
+      "person_id": 97,
+      "explanation": "Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 2.80"
+    },
+    {
+      "frame": 3183,
+      "person_id": 104,
+      "explanation": "Tracking error: 16 keypoints jumped impossibly"
+    }
+  ]
+}

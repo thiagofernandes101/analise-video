@@ -1,0 +1,270 @@
+================================================================================
+                         VIDEO ANALYSIS SUMMARY
+================================================================================
+Generated: 2025-12-24 01:48:29
+================================================================================
+
+📊 OVERVIEW STATISTICS
+--------------------------------------------------------------------------------
+Total Frames:       3326
+Persons Detected:   33
+Anomalies Detected: 8
+
+🏃 TOP ACTIVITIES
+--------------------------------------------------------------------------------
+  Sitting                              4236  ████████████████████████████████████████
+  Unknown Action (Neutral)             1358  ████████████
+  Unknown Action (Sad)                 1246  ███████████
+  Standing                              930  ████████
+  Standing, Walking                     877  ████████
+
+😊 TOP EMOTIONS
+--------------------------------------------------------------------------------
+  neutral                              1485  ████████████████████████████████████████
+  sad                                  1477  ███████████████████████████████████████
+  fear                                  856  ███████████████████████
+  happy                                 757  ████████████████████
+  angry                                 403  ██████████
+
+👤 PER-PERSON ANALYSIS
+================================================================================
+
+Person ID #1 (179 frames)
+--------------------------------------------------------------------------------
+  Emotions:    Analyzing..., sad, neutral, fear
+  Activities:  Standing, Standing, Walking, Sitting, Unknown Action (Sad), Unknown Action (Neutral), Unknown Action (Fear)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:00 - 00:00]: Standing (Analyzing...)
+    • [00:01 - 00:04]: Unknown Action (Neutral) (neutral)
+
+Person ID #2 (179 frames)
+--------------------------------------------------------------------------------
+  Emotions:    Analyzing..., fear, sad
+  Activities:  Standing, Standing, Walking, Unknown Action (Fear), Sitting, Unknown Action (Sad)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:00 - 00:00]: Standing (fear)
+    • [00:01 - 00:03]: Unknown Action (Fear) (fear)
+    • [00:03 - 00:05]: Unknown Action (Sad) (sad)
+
+Person ID #3 (53 frames)
+--------------------------------------------------------------------------------
+  Emotions:    Nenhuma emoção detectada
+  Activities:  Standing, Sitting, Unknown Action (Unknown)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:00 - 00:00]: Standing (Unknown)
+    • [00:01 - 00:01]: Unknown Action (Unknown) (Unknown)
+
+Person ID #4 (110 frames)
+--------------------------------------------------------------------------------
+  Emotions:    Analyzing..., angry, sad
+  Activities:  Unknown Action (Angry), Unknown Action (Sad), Sitting
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:00 - 00:00]: Unknown (angry)
+    • [00:01 - 00:03]: Unknown Action (Sad) (sad)
+
+Person ID #6 (143 frames)
+--------------------------------------------------------------------------------
+  Emotions:    Nenhuma emoção detectada
+  Activities:  Sitting, Standing, Walking, Unknown Action (Unknown), Sitting, Waving Head
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:01 - 00:02]: Sitting (Unknown)
+    • [00:02 - 00:05]: Unknown Action (Unknown) (Unknown)
+
+Person ID #7 (252 frames)
+--------------------------------------------------------------------------------
+  Emotions:    angry, happy, neutral
+  Activities:  Unknown Action (Angry), Unknown Action (Happy), Standing, Walking, Standing, Waving Hand, Standing, Standing, Jumping, Standing, Waving Head, Laying Down
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:03 - 00:04]: Unknown (angry)
+    • [00:05 - 00:11]: Unknown Action (Happy) (happy)
+
+Person ID #20 (82 frames)
+--------------------------------------------------------------------------------
+  Emotions:    angry, surprise, sad, happy, neutral
+  Activities:  Standing, Sitting, Hands Up, Standing, Hands Up, Standing, Walking, Sitting, Waving Hand, Standing, Waving Hand, Unknown Action (Angry), Unknown Action (Surprise), Unknown Action (Sad), Laying Down, Waving Hand, Unknown Action (Happy), Laying Down, Jumping
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:18 - 00:18]: Standing, Walking (angry)
+
+Person ID #23 (278 frames)
+--------------------------------------------------------------------------------
+  Emotions:    neutral, sad, angry, happy
+  Activities:  Laying Down, Hands Up, Standing, Hands Up, Laying Down, Waving Hand, Standing, Walking, Sitting, Waving Hand, Standing, Sitting, Unknown Action (Sad), Unknown Action (Angry), Standing, Waving Hand, Unknown Action (Happy), Unknown Action (Neutral)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:21 - 00:21]: Standing, Walking (neutral)
+    • [00:22 - 00:22]: Unknown Action (Sad) (sad)
+    • [00:23 - 00:23]: Unknown Action (Angry) (angry)
+    • [00:24 - 00:25]: Unknown Action (Happy) (happy)
+    • [00:25 - 00:29]: Unknown Action (Neutral) (neutral)
+
+Person ID #24 (179 frames)
+--------------------------------------------------------------------------------
+  Emotions:    surprise, fear
+  Activities:  Standing, Standing, Walking, Unknown Action (Surprise), Unknown Action (Fear), Standing, Hands Up
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:31 - 00:33]: Unknown Action (Surprise) (surprise)
+    • [00:33 - 00:34]: Unknown Action (Fear) (fear)
+    • [00:34 - 00:35]: Unknown Action (Surprise) (surprise)
+
+Person ID #25 (629 frames)
+--------------------------------------------------------------------------------
+  Emotions:    neutral, happy, sad, angry, fear, surprise
+  Activities:  Laying Down, Unknown Action (Neutral), Laying Down, Waving Hand, Laying Down, Jumping, Laying Down, Hands Up, Standing, Walking, Sitting, Waving Hand, Sitting, Hands Up, Unknown Action (Sad), Unknown Action (Happy), Standing, Hands Up, Sitting, Waving Head, Unknown Action (Angry), Unknown Action (Fear), Standing, Sitting, Standing, Waving Head, Standing, Jumping
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:36 - 00:36]: Laying Down (neutral)
+    • [00:37 - 00:42]: Unknown Action (Neutral) (neutral)
+    • [00:43 - 00:44]: Unknown Action (Neutral) (neutral)
+    • [00:46 - 00:49]: Unknown Action (Neutral) (neutral)
+    • [00:50 - 00:54]: Unknown Action (Happy) (happy)
+    • [00:55 - 00:56]: Unknown Action (Neutral) (neutral)
+
+Person ID #26 (119 frames)
+--------------------------------------------------------------------------------
+  Emotions:    happy, fear, sad
+  Activities:  Sitting, Hands Up, Standing, Hands Up, Standing, Walking, Laying Down, Waving Hand, Sitting, Waving Hand, Sitting, Jumping, Laying Down, Jumping, Unknown Action (Happy), Unknown Action (Fear), Standing, Waving Hand, Unknown Action (Sad)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [00:58 - 00:59]: Unknown Action (Fear) (fear)
+    • [01:00 - 01:00]: Unknown Action (Sad) (sad)
+
+Person ID #27 (335 frames)
+--------------------------------------------------------------------------------
+  Emotions:    neutral, surprise
+  Activities:  Sitting, Sitting, Waving Head, Sitting, Jumping, Unknown Action (Unknown), Unknown Action (Neutral), Unknown Action (Surprise)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:01 - 01:02]: Sitting (Unknown)
+    • [01:02 - 01:07]: Unknown Action (Unknown) (neutral)
+    • [01:07 - 01:12]: Unknown Action (Neutral) (neutral)
+
+Person ID #28 (359 frames)
+--------------------------------------------------------------------------------
+  Emotions:    angry, fear, sad, surprise, neutral, happy
+  Activities:  Sitting, Unknown Action (Angry), Unknown Action (Sad), Standing, Jumping, Standing, Walking, Standing, Unknown Action (Fear), Unknown Action (Surprise), Unknown Action (Neutral)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:01 - 01:01]: Sitting (angry)
+    • [01:02 - 01:05]: Unknown Action (Angry) (angry)
+    • [01:05 - 01:07]: Unknown Action (Sad) (sad)
+    • [01:08 - 01:09]: Unknown Action (Fear) (fear)
+    • [01:09 - 01:10]: Unknown Action (Angry) (angry)
+    • [01:11 - 01:12]: Unknown Action (Neutral) (neutral)
+
+Person ID #31 (110 frames)
+--------------------------------------------------------------------------------
+  Emotions:    sad, angry, neutral
+  Activities:  Standing, Standing, Walking, Unknown Action (Sad), Unknown Action (Angry), Standing, Hands Up, Sitting
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:13 - 01:13]: Standing, Walking (sad)
+    • [01:14 - 01:15]: Unknown Action (Angry) (angry)
+    • [01:16 - 01:17]: Unknown Action (Sad) (sad)
+
+Person ID #32 (569 frames)
+--------------------------------------------------------------------------------
+  Emotions:    fear, neutral, angry, sad, surprise
+  Activities:  Sitting, Sitting, Waving Head, Unknown Action (Unknown), Unknown Action (Fear), Unknown Action (Neutral), Standing, Walking, Standing, Unknown Action (Sad), Unknown Action (Surprise)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:13 - 01:13]: Sitting (Unknown)
+    • [01:14 - 01:15]: Unknown Action (Fear) (fear)
+    • [01:15 - 01:20]: Unknown Action (Neutral) (neutral)
+    • [01:21 - 01:21]: Unknown Action (Sad) (sad)
+    • [01:23 - 01:31]: Unknown Action (Sad) (sad)
+
+Person ID #35 (87 frames)
+--------------------------------------------------------------------------------
+  Emotions:    neutral, angry, sad
+  Activities:  Standing, Standing, Walking, Standing, Hands Up, Unknown Action (Neutral), Unknown Action (Angry)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:17 - 01:18]: Unknown Action (Neutral) (neutral)
+
+Person ID #37 (87 frames)
+--------------------------------------------------------------------------------
+  Emotions:    Nenhuma emoção detectada
+  Activities:  Sitting, Hands Up, Unknown Action (Unknown), Sitting, Waving Hand, Sitting, Sitting, Waving Head
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:20 - 01:20]: Sitting, Hands Up (Unknown)
+    • [01:21 - 01:22]: Unknown Action (Unknown) (Unknown)
+
+Person ID #41 (340 frames)
+--------------------------------------------------------------------------------
+  Emotions:    sad, fear, neutral
+  Activities:  Sitting, Unknown Action (Sad), Sitting, Waving Head, Sitting, Waving Hand, Sitting, Hands Up, Unknown Action (Fear)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:20 - 01:21]: Sitting (sad)
+    • [01:22 - 01:26]: Unknown Action (Sad) (sad)
+    • [01:27 - 01:31]: Unknown Action (Fear) (fear)
+
+Person ID #49 (237 frames)
+--------------------------------------------------------------------------------
+  Emotions:    fear
+  Activities:  Sitting, Unknown Action (Unknown), Sitting, Waving Hand, Sitting, Hands Up, Unknown Action (Fear)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:23 - 01:25]: Sitting (Unknown)
+    • [01:25 - 01:26]: Unknown Action (Unknown) (fear)
+    • [01:26 - 01:31]: Unknown Action (Fear) (fear)
+
+Person ID #56 (179 frames)
+--------------------------------------------------------------------------------
+  Emotions:    sad, fear
+  Activities:  Sitting, Unknown Action (Sad)
+  Anomalies:   0
+
+  Movement Timeline:
+    • [01:26 - 01:26]: Sitting (sad)
+    • [01:27 - 01:31]: Unknown Action (Sad) (sad)
+
+⚠️  BEHAVIORAL ANOMALIES
+================================================================================
+Total: 4
+
+  Frame  2740, Person #58: Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 866.07
+  Frame  2741, Person #58: Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 2.49
+  Frame  3120, Person #97: Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 45.35
+  Frame  3121, Person #97: Anomaly (44%) - Anomalous body parts: hips, legs; Statistical outlier: Z-score: 2.80
+
+🔧 SYSTEM DIAGNOSTICS (Tracking Errors)
+================================================================================
+Total: 4
+
+  Frame  2420, Person #42: Tracking error: 16 keypoints jumped impossibly
+  Frame  2468, Person #43: Tracking error: 6 keypoints jumped impossibly
+  Frame  2515, Person #50: Tracking error: 6 keypoints jumped impossibly
+  Frame  3183, Person #104: Tracking error: 16 keypoints jumped impossibly
+
+================================================================================
+                    Summary generated successfully
+================================================================================

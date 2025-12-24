@@ -62,18 +62,56 @@ class SummaryWindow:
         print(f"  - In Docker: {in_docker}")
         print(f"  - /.dockerenv exists: {os.path.exists('/.dockerenv')}")
         
-        # Always use GUI window in Docker (Tkinter works with WSLg)
-        if in_docker and display_available:
-            print("[INFO] Running in Docker with DISPLAY - attempting GUI window")
+        # If in Docker, save to files instead of showing GUI
+        if in_docker:
+            print("\n[INFO] Running in Docker - exporting summary to files...")
             try:
-                from ui.summary_gui_window import SummaryGUIWindow
-                gui = SummaryGUIWindow()
-                gui.show(statistics)
+                from ui.file_summary_exporter import FileSummaryExporter
+                
+                # Create output directory if it doesn't exist
+                output_dir = "/app/output"
+                os.makedirs(output_dir, exist_ok=True)
+                
+                # Export to both text and JSON
+                text_path = os.path.join(output_dir, "summary.txt")
+                json_path = os.path.join(output_dir, "summary.json")
+                
+                FileSummaryExporter.export_to_text(statistics, text_path)
+                FileSummaryExporter.export_to_json(statistics, json_path)
+                
+                print(f"\n📄 Summary files created:")
+                print(f"   - Text: {text_path}")
+                print(f"   - JSON: {json_path}")
+                print("\n💡 Tip: You can access these files from your host machine")
+                print("    at ./output/summary.txt and ./output/summary.json")
+                print("\n" + "="*80)
+                
+                # Also print a quick summary to console
+                print("\n📊 QUICK SUMMARY:")
+                print(f"   Total Frames:       {statistics.total_frames}")
+                print(f"   Persons Detected:   {statistics.get_person_count()}")
+                print(f"   Anomalies Detected: {statistics.get_anomaly_count()}")
+                
+                # Top activities
+                print("\n🏃 Top 5 Activities:")
+                for activity, count in statistics.get_top_activities()[:5]:
+                    print(f"   • {activity}: {count}")
+                
+                # Top emotions
+                print("\n😊 Top 5 Emotions:")
+                for emotion, count in statistics.get_top_emotions()[:5]:
+                    print(f"   • {emotion}: {count}")
+                
+                print("\n" + "="*80)
+                print("✅ Analysis complete! Check the files above for full details.")
+                print("="*80 + "\n")
+                
                 return
             except Exception as e:
-                print(f"\n⚠️  GUI window failed: {e}")
+                print(f"\n⚠️  File export failed: {e}")
                 print("Falling back to terminal UI...")
                 traceback.print_exc()
+                # Fall through to terminal UI
         
         # Fallback to terminal UI  
         if in_docker or not display_available:
@@ -585,34 +623,60 @@ class SummaryWindow:
             
             # Anomalies Details (if any)
             if stats.all_anomalies:
-                console.print(Panel(
-                    f"[red bold]⚠️  {len(stats.all_anomalies)} Anomalies Detected[/]",
-                    box=box.ROUNDED,
-                    border_style="red"
-                ))
+                # Split anomalies
+                system_anomalies = []
+                behavioral_anomalies = []
                 
-                anomaly_table = Table(box=box.SIMPLE)
-                anomaly_table.add_column("Frame", style="cyan", width=8)
-                anomaly_table.add_column("Person ID", style="green", width=10)
-                anomaly_table.add_column("Description", style="yellow", width=60)
+                for anomaly in stats.all_anomalies:
+                    desc = anomaly.explanation.lower()
+                    if "tracking error" in desc or "analyzing" in desc:
+                        system_anomalies.append(anomaly)
+                    else:
+                        behavioral_anomalies.append(anomaly)
                 
-                # Show first 15 anomalies
-                for anomaly in stats.all_anomalies[:15]:
-                    anomaly_table.add_row(
-                        str(anomaly.frame_number),
-                        f"#{anomaly.track_id}",
-                        anomaly.explanation
-                    )
-                
-                if len(stats.all_anomalies) > 15:
-                    anomaly_table.add_row(
-                        "...",
-                        "...",
-                        f"[dim]+ {len(stats.all_anomalies) - 15} more anomalies[/dim]"
-                    )
-                
-                console.print(anomaly_table)
-                console.print()
+                # Render Behavioral Anomalies
+                if behavioral_anomalies:
+                    console.print(Panel(
+                        f"[red bold]⚠️  {len(behavioral_anomalies)} Behavioral Anomalies Detected[/]",
+                        box=box.ROUNDED,
+                        border_style="red"
+                    ))
+                    
+                    anomaly_table = Table(box=box.SIMPLE)
+                    anomaly_table.add_column("Frame", style="cyan", width=8)
+                    anomaly_table.add_column("Person ID", style="green", width=10)
+                    anomaly_table.add_column("Description", style="yellow", width=60)
+                    
+                    for anomaly in behavioral_anomalies[:15]:
+                        anomaly_table.add_row(
+                            str(anomaly.frame_number),
+                            f"#{anomaly.track_id}",
+                            anomaly.explanation
+                        )
+                    console.print(anomaly_table)
+                    console.print()
+
+                # Render System Diagnostics (Tracking Errors)
+                if system_anomalies:
+                    console.print(Panel(
+                        f"[orange3]🔧 System Diagnostics ({len(system_anomalies)} Tracking Errors)[/]",
+                        box=box.ROUNDED,
+                        border_style="orange3"
+                    ))
+                    
+                    sys_table = Table(box=box.SIMPLE)
+                    sys_table.add_column("Frame", style="dim cyan", width=8)
+                    sys_table.add_column("Person ID", style="dim green", width=10)
+                    sys_table.add_column("Description", style="dim white", width=60)
+                    
+                    for anomaly in system_anomalies[:5]:
+                        sys_table.add_row(
+                            str(anomaly.frame_number),
+                            f"#{anomaly.track_id}",
+                            anomaly.explanation
+                        )
+                    console.print(sys_table)
+                    console.print()
             
             # Footer
             console.print(Panel(
@@ -675,9 +739,31 @@ class SummaryWindow:
                         print(f"       - Frame {anomaly.frame_number}: {anomaly.explanation}")
         
         if stats.all_anomalies:
-            print(f"\n--- Anomalies ({len(stats.all_anomalies)} total, showing first 10) ---")
-            for anomaly in stats.all_anomalies[:10]:
-                print(f"  Frame {anomaly.frame_number}, ID #{anomaly.track_id}: {anomaly.explanation}")
+            # Split anomalies
+            system_anomalies = []
+            behavioral_anomalies = []
+            
+            for anomaly in stats.all_anomalies:
+                desc = anomaly.explanation.lower()
+                if "tracking error" in desc or "analyzing" in desc:
+                    system_anomalies.append(anomaly)
+                else:
+                    behavioral_anomalies.append(anomaly)
+            
+            if behavioral_anomalies:
+                print(f"\n--- Behavioral Anomalies ({len(behavioral_anomalies)} total) ---")
+                for anomaly in behavioral_anomalies[:15]:
+                    print(f"  Frame {anomaly.frame_number}, ID #{anomaly.track_id}: {anomaly.explanation}")
+                    
+            if system_anomalies:
+                print(f"\n--- System Diagnostics / Tracking Errors ({len(system_anomalies)} total) ---")
+                count = 0
+                for anomaly in system_anomalies:
+                    if count < 5: # Show fewer system errors
+                        print(f"  Frame {anomaly.frame_number}, ID #{anomaly.track_id}: {anomaly.explanation}")
+                    count += 1
+                if count > 5:
+                    print(f"  ... and {count - 5} more tracking errors")
         
         print("\n" + "="*80)
         print(" "*20 + "Summary generated successfully")
